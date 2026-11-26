@@ -1,0 +1,45 @@
+# Kalender – kalender med att göra-listor för iOS
+
+En iPhone- och iPad-app skriven i SwiftUI. Lägg till uppgifter på valfri dag i kalendern och bocka av dem när de är klara.
+
+## Funktioner
+
+- **Månadskalender** med veckonummer, där veckan börjar på måndag.
+- Bläddra mellan månader med pilarna eller genom att svepa åt vänster eller höger. **Idag** hoppar tillbaka till dagens datum.
+- **En prick under dagar som har uppgifter.** Färgad prick betyder att det finns uppgifter kvar, grön prick att alla är klara.
+- **Att göra-lista per dag** som visar till exempel "2 av 5 klara".
+- Uppgifter har titel, anteckningar, valfritt klockslag och prioritet (låg, normal eller hög).
+- **Påminnelser** som notis vid vald tid.
+- Svep åt höger för att markera en uppgift som klar och åt vänster för att radera den. Tryck på en uppgift för att redigera den.
+- Uppgifterna sparas lokalt på telefonen med SwiftData.
+- Gränssnittet är på svenska och har stöd för mörkt läge och VoiceOver.
+
+## Krav
+
+- En Mac med **Xcode 16** eller senare.
+- iOS 17 eller senare.
+
+## Så kör du appen
+
+1. Klona repot och öppna `Kalender/Kalender.xcodeproj` i Xcode.
+2. Välj en simulator, till exempel iPhone 16, och tryck **⌘R**.
+
+### På din egen iPhone
+
+1. Klicka på projektet **Kalender** i Xcode, välj målet **Kalender** och fliken **Signing & Capabilities**.
+2. Välj ditt Apple-ID under **Team**. Ett gratis Apple-ID fungerar.
+3. Ändra **Bundle Identifier** till något unikt, till exempel `se.dittnamn.Kalender`.
+4. Anslut iPhonen, välj den som mål och tryck **⌘R**. Första gången kan du behöva godkänna utvecklaren på telefonen under *Inställningar → Allmänt → VPN och enhetshantering*.
+
+## Filer
+
+| Fil | Innehåll |
+|---|---|
+| `KalenderApp.swift` | Appens startpunkt och hantering av notiser |
+| `TodoItem.swift` | Datamodellen för en uppgift |
+| `ContentView.swift` | Huvudvyn med kalendern ovanför dagens lista |
+| `MonthCalendarView.swift` | Månadsvyn |
+| `DayTodoListView.swift` | Att göra-listan för vald dag |
+| `TodoEditorView.swift` | Formulär för att skapa och redigera uppgifter |
+| `ReminderScheduler.swift` | Schemaläggning av påminnelser |
+| `CalendarHelpers.swift` | Hjälpfunktioner för datum och den svenska kalendern |
