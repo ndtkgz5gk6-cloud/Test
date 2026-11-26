@@ -16,6 +16,10 @@ Hela appen ligger i en enda fil, `web/index.html`.
   ```
   och gå till http://localhost:8000.
 - **Använd på iPhone:** lägg mappen `web/` på en webbserver, till exempel GitHub Pages. Öppna sidan i Safari och välj *Dela → Lägg till på hemskärmen*. Då får appen en egen ikon och öppnas i helskärm.
+- **Kategorier med färger:** varje uppgift kan få en kategori. Från början finns Arbete, Privat, Hem och Hälsa.
+  - Prickarna i kalendern och strecket vid varje uppgift visas i kategorins färg.
+  - Filtrera på en kategori med knapparna ovanför kalendern.
+  - Under *Hantera kategorier* skapar du nya kategorier och byter namn och färg. Om du raderar en kategori finns uppgifterna kvar, men utan kategori.
 - **Data:** uppgifterna sparas i webbläsaren med `localStorage`. Under *Säkerhetskopia* kan du kopiera ut dem som text och läsa in dem igen.
 - **Kortkommandon:** `←` och `→` byter månad och `N` skapar en ny uppgift.
 - **Skillnad mot iOS-appen:** webbversionen skickar inga påminnelser.

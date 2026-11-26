@@ -29,12 +29,17 @@
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
   --radius: 14px;
+  /* Kategorifärger */
+  --c-red: #d93a3a; --c-orange: #dd6a1c; --c-yellow: #b88a00; --c-green: #2f9a55; --c-teal: #12898a;
+  --c-blue: #2f6fd6; --c-purple: #7a4fd0; --c-pink: #cf4789; --c-gray: #737a86;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #111317; --surface: #1b1d22; --fg: #eceef1; --muted: #9aa0ab; --line: #2b2e35;
     --accent: #ff7a52; --accent-soft: #3a2219; --on-accent: #1b0f0a; --done: #4cc07e; --danger: #ff6b6b;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    --c-red: #ff6b6b; --c-orange: #ff9a4d; --c-yellow: #f2c94c; --c-green: #55c983; --c-teal: #3cc9c4;
+    --c-blue: #6aa0ff; --c-purple: #a98bff; --c-pink: #ff7fbf; --c-gray: #9aa0ab;
     color-scheme: dark;
   }
 }
@@ -42,7 +47,9 @@
   --bg: #111317; --surface: #1b1d22; --fg: #eceef1; --muted: #9aa0ab; --line: #2b2e35;
   --accent: #ff7a52; --accent-soft: #3a2219; --on-accent: #1b0f0a; --done: #4cc07e; --danger: #ff6b6b;
   --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
-  color-scheme: dark;
+  --c-red: #ff6b6b; --c-orange: #ff9a4d; --c-yellow: #f2c94c; --c-green: #55c983; --c-teal: #3cc9c4;
+    --c-blue: #6aa0ff; --c-purple: #a98bff; --c-pink: #ff7fbf; --c-gray: #9aa0ab;
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -124,6 +131,7 @@ svg { width: 1em; height: 1em; flex: none; }
 .day.sel .num, .day.sel:hover .num { background: var(--accent); color: var(--on-accent); font-weight: 700; box-shadow: none; }
 .day.weekend .num { color: var(--muted); }
 .day.weekend.sel .num { color: var(--on-accent); }
+.dots { display: flex; gap: 3px; height: 6px; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
 .dot.open { background: var(--accent); }
 .dot.alldone { background: var(--done); }
@@ -140,7 +148,11 @@ svg { width: 1em; height: 1em; flex: none; }
 
 .list { list-style: none; margin: 0; padding: 0; }
 .item {
-  display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px 10px 10px; border-radius: 10px;
+  position: relative; display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px 10px 14px; border-radius: 10px;
+}
+.item::before {
+  content: ""; position: absolute; left: 3px; top: 12px; bottom: 12px; width: 4px; border-radius: 4px;
+  background: var(--cat, transparent);
 }
 .item:hover { background: var(--bg); }
 .item + .item { border-top: 1px solid var(--line); }
@@ -220,6 +232,38 @@ textarea.input { resize: vertical; min-height: 70px; }
 
 .foot { margin-top: 18px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
 
+/* Kategorier */
+.swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; }
+.filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; margin: 0 -2px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; flex: none;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-size: 14px; font-weight: 500;
+}
+.chip:hover { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip-ghost { background: transparent; border-style: dashed; color: var(--muted); }
+.cat-chip { color: var(--muted); }
+.cat-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-pick label { position: relative; }
+.cat-pick input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.cat-pick .chip { pointer-events: none; }
+.cat-pick input:checked + .chip { border-color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
+.cat-pick input:focus-visible + .chip { outline: 2px solid var(--accent); outline-offset: 2px; }
+.link-btn { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 500; font-size: 14px; align-self: flex-start; }
+.link-btn:hover { text-decoration: underline; }
+.cat-rows { display: flex; flex-direction: column; gap: 12px; }
+.cat-row { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.cat-row-top { display: flex; gap: 8px; align-items: center; }
+.cat-row-top .input { flex: 1; min-width: 0; }
+.palette { display: flex; flex-wrap: wrap; gap: 6px; }
+.palette label { position: relative; }
+.palette input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.palette span { display: block; width: 28px; height: 28px; border-radius: 50%; box-shadow: inset 0 0 0 2px transparent; }
+.palette input:checked + span { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--fg); }
+.palette input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 4px; }
+.cat-count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
 @media (max-width: 520px) {
   .btn-label { display: none; }
   .cal { padding: 12px 6px 16px; }
@@ -253,6 +297,8 @@ textarea.input { resize: vertical; min-height: 70px; }
     <p>Den här webbläsaren tillåter inte att data sparas. Uppgifterna försvinner när du stänger sidan.</p>
   </div>
 
+  <div class="filters" id="filters" role="toolbar" aria-label="Filtrera på kategori"></div>
+
   <main class="layout">
     <section class="panel cal" id="cal" aria-label="Månadskalender">
       <div class="cal-head">
@@ -262,7 +308,8 @@ textarea.input { resize: vertical; min-height: 70px; }
       </div>
       <div class="grid" id="cal-grid" role="grid"></div>
       <div class="cal-legend">
-        <span><i class="dot open"></i>Uppgifter kvar</span>
+        <span><i class="dot" style="background:var(--c-blue)"></i><i class="dot" style="background:var(--c-pink)"></i>Uppgifter kvar, i kategorins färg</span>
+        <span><i class="dot" style="background:var(--muted)"></i>Utan kategori</span>
         <span><i class="dot alldone"></i>Allt klart</span>
       </div>
     </section>
@@ -314,6 +361,11 @@ textarea.input { resize: vertical; min-height: 70px; }
         </div>
       </div>
       <div class="field">
+        <span class="label" id="f-cat-label">Kategori</span>
+        <div class="cat-pick" id="f-cat" role="radiogroup" aria-labelledby="f-cat-label"></div>
+        <button class="link-btn" type="button" id="btn-manage-from-editor">Hantera kategorier</button>
+      </div>
+      <div class="field">
         <span class="label">Prioritet</span>
         <div class="seg" role="radiogroup" aria-label="Prioritet">
           <label><input type="radio" name="prio" id="f-prio-0" value="0"><span>Låg</span></label>
@@ -341,6 +393,25 @@ textarea.input { resize: vertical; min-height: 70px; }
       <button class="btn btn-primary" type="submit" id="btn-save">Spara</button>
     </div>
   </form>
+</dialog>
+
+<!-- Kategorier -->
+<dialog id="cats" aria-labelledby="cats-title">
+  <div class="dlg">
+    <div class="dlg-head">
+      <h2 id="cats-title">Kategorier</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="dlg-body">
+      <div class="cat-rows" id="cat-rows"></div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn spacer" type="button" id="btn-add-cat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ny kategori
+      </button>
+      <button class="btn btn-primary" type="button" data-close>Klar</button>
+    </div>
+  </div>
 </dialog>
 
 <!-- Bekräftelse -->
@@ -379,6 +450,19 @@ textarea.input { resize: vertical; min-height: 70px; }
   // ---------- Konstanter ----------
   const STORAGE_KEY = "kalender.todos.v1";
   const SEEDED_KEY = "kalender.seeded.v1";
+  const CATS_KEY = "kalender.categories.v1";
+  const FILTER_KEY = "kalender.filter.v1";
+  const COLORS = [
+    ["red", "Röd"], ["orange", "Orange"], ["yellow", "Gul"], ["green", "Grön"], ["teal", "Turkos"],
+    ["blue", "Blå"], ["purple", "Lila"], ["pink", "Rosa"], ["gray", "Grå"],
+  ];
+  const DEFAULT_CATS = [
+    { id: "arbete", name: "Arbete", color: "blue" },
+    { id: "privat", name: "Privat", color: "green" },
+    { id: "hem", name: "Hem", color: "orange" },
+    { id: "halsa", name: "Hälsa", color: "pink" },
+  ];
+  const colorVar = (c) => `var(--c-${COLORS.some(([k]) => k === c) ? c : "gray"})`;
   const PRIORITY = ["Låg", "Normal", "Hög"];
   const RECURRENCE = [
     { title: "Aldrig", short: "" },
@@ -470,6 +554,7 @@ textarea.input { resize: vertical; min-height: 70px; }
       completed: Array.isArray(t.completed) ? t.completed.filter((d) => typeof d === "string") : [],
       skipped: Array.isArray(t.skipped) ? t.skipped.filter((d) => typeof d === "string") : [],
       createdAt: Number(t.createdAt) || Date.now(),
+      categoryId: typeof t.categoryId === "string" ? t.categoryId : null,
       example: !!t.example,
     };
   }
@@ -481,7 +566,24 @@ textarea.input { resize: vertical; min-height: 70px; }
   function writeStore(k, v) { try { localStorage.setItem(k, v); } catch { storageOk = false; } }
 
   let todos = [];
+  let categories = [];
+  const catById = (id) => (id && categories.find((c) => c.id === id)) || null;
+  function normalizeCat(c) {
+    return {
+      id: String(c.id || uid()),
+      name: String(c.name || "Namnlös").slice(0, 40),
+      color: COLORS.some(([k]) => k === c.color) ? c.color : "gray",
+    };
+  }
+  function loadCats() {
+    const raw = readStore(CATS_KEY);
+    if (raw === null) { categories = DEFAULT_CATS.map(normalizeCat); saveCats(); return; }
+    try { categories = JSON.parse(raw).map(normalizeCat); } catch { categories = DEFAULT_CATS.map(normalizeCat); }
+  }
+  function saveCats() { writeStore(CATS_KEY, JSON.stringify(categories)); }
+
   function load() {
+    loadCats();
     const raw = readStore(STORAGE_KEY);
     if (raw) {
       try { todos = JSON.parse(raw).map(normalize); } catch { todos = []; }
@@ -490,12 +592,26 @@ textarea.input { resize: vertical; min-height: 70px; }
       writeStore(SEEDED_KEY, "1");
       save();
     }
+    // Exempel som skapades innan kategorier fanns får en kategori
+    let changed = false;
+    for (const t of todos) {
+      if (t.example && !t.categoryId && EXAMPLE_CATS[t.title] && catById(EXAMPLE_CATS[t.title])) {
+        t.categoryId = EXAMPLE_CATS[t.title]; changed = true;
+      }
+    }
+    if (changed) save();
+    const f = readStore(FILTER_KEY);
+    state.filter = catById(f) ? f : null;
   }
+  const EXAMPLE_CATS = {
+    "Handla mat till helgen": "hem", "Träna": "halsa", "Svara på mejl": "arbete",
+    "Ring tandläkaren": "halsa", "Betala hyran": "hem", "Vattna blommorna": "hem",
+  };
   function save() { writeStore(STORAGE_KEY, JSON.stringify(todos)); }
 
   function exampleTodos() {
     const t = todayKey();
-    const mk = (o) => normalize({ ...o, id: uid(), example: true, createdAt: Date.now() });
+    const mk = (o) => normalize({ ...o, id: uid(), example: true, createdAt: Date.now(), categoryId: EXAMPLE_CATS[o.title] });
     return [
       mk({ title: "Handla mat till helgen", notes: "Mjölk, bröd, kaffe, frukt", date: t, time: "17:30", priority: 2 }),
       mk({ title: "Träna", date: addDays(t, -7), time: "18:00", recurrence: 3, completed: [addDays(t, -7)] }),
@@ -513,7 +629,9 @@ textarea.input { resize: vertical; min-height: 70px; }
     viewM: parts(todayKey())[1],
     editingId: null,
     occurrenceDay: null,
+    filter: null, // kategori-id eller null = alla
   };
+  const visible = (t) => !state.filter || t.categoryId === state.filter;
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -541,16 +659,28 @@ textarea.input { resize: vertical; min-height: 70px; }
       week.forEach((day, idx) => {
         if (!day) { html += "<div></div>"; return; }
         let open = 0, count = 0;
-        for (const t of todos) if (occurs(t, day)) { count++; if (!isDone(t, day)) open++; }
+        const colors = [];
+        for (const t of todos) {
+          if (!visible(t) || !occurs(t, day)) continue;
+          count++;
+          if (!isDone(t, day)) {
+            open++;
+            const c = catById(t.categoryId);
+            const v = c ? colorVar(c.color) : "var(--muted)";
+            if (!colors.includes(v)) colors.push(v);
+          }
+        }
         const cls = ["day"];
         if (day === today) cls.push("today");
         if (day === state.selected) cls.push("sel");
         if (idx >= 5) cls.push("weekend");
-        const dot = count ? (open ? "open" : "alldone") : "";
+        const dots = !count ? "" : open
+          ? colors.slice(0, 3).map((c) => `<i class="dot" style="background:${c}"></i>`).join("")
+          : '<i class="dot alldone"></i>';
         const label = cap(fmt(day, { weekday: "long", day: "numeric", month: "long" })) +
           (count ? `, ${open} av ${count} uppgifter kvar` : "");
         html += `<button type="button" class="${cls.join(" ")}" data-day="${day}" aria-label="${esc(label)}" aria-pressed="${day === state.selected}">` +
-          `<span class="num">${dayOf(day)}</span><i class="dot ${dot}"></i></button>`;
+          `<span class="num">${dayOf(day)}</span><span class="dots">${dots}</span></button>`;
       });
     }
     grid.innerHTML = html;
@@ -567,7 +697,7 @@ textarea.input { resize: vertical; min-height: 70px; }
   // ---------- Dagens lista ----------
   function occurrencesFor(day) {
     return todos
-      .filter((t) => occurs(t, day))
+      .filter((t) => visible(t) && occurs(t, day))
       .sort((a, b) => {
         const da = isDone(a, day), db = isDone(b, day);
         if (da !== db) return da ? 1 : -1;
@@ -588,14 +718,18 @@ textarea.input { resize: vertical; min-height: 70px; }
     $("day-bar").hidden = !items.length;
     $("day-bar-fill").style.width = items.length ? `${(done / items.length) * 100}%` : "0";
     $("day-empty").hidden = items.length > 0;
+    const fc = catById(state.filter);
+    $("day-empty").querySelector("h3").textContent = fc ? `Inga uppgifter i ${fc.name}` : "Inga uppgifter";
 
     $("day-list").innerHTML = items.map((t) => {
       const d = isDone(t, day);
       const meta = [];
       if (t.time) meta.push(`<span>${ICON.clock}${t.time}</span>`);
       if (t.recurrence) meta.push(`<span>${ICON.repeat}${RECURRENCE[t.recurrence].short}</span>`);
+      const cat = catById(t.categoryId);
+      if (cat) meta.unshift(`<span class="cat-chip"><i class="swatch" style="background:${colorVar(cat.color)}"></i>${esc(cat.name)}</span>`);
       const prio = t.priority === 2 ? '<span class="prio high">Hög</span>' : t.priority === 0 ? '<span class="prio low">Låg</span>' : "";
-      return `<li class="item${d ? " done" : ""}" data-id="${t.id}">
+      return `<li class="item${d ? " done" : ""}" data-id="${t.id}"${cat ? ` style="--cat:${colorVar(cat.color)}"` : ""}>
         <button type="button" class="check" data-action="toggle" aria-label="${d ? "Markera som ej klar" : "Markera som klar"}: ${esc(t.title)}">${ICON.check}</button>
         <button type="button" class="body" data-action="edit" aria-label="Redigera ${esc(t.title)}">
           <span class="title">${esc(t.title)}</span>
@@ -608,7 +742,24 @@ textarea.input { resize: vertical; min-height: 70px; }
     }).join("");
   }
 
+  function renderFilters() {
+    const chips = [`<button type="button" class="chip" data-filter="" aria-pressed="${!state.filter}">Alla</button>`];
+    for (const c of categories) {
+      chips.push(`<button type="button" class="chip" data-filter="${esc(c.id)}" aria-pressed="${state.filter === c.id}">` +
+        `<i class="swatch" style="background:${colorVar(c.color)}"></i>${esc(c.name)}</button>`);
+    }
+    chips.push('<button type="button" class="chip chip-ghost" data-manage>Hantera kategorier</button>');
+    $("filters").innerHTML = chips.join("");
+  }
+  function setFilter(id) {
+    state.filter = catById(id) ? id : null;
+    writeStore(FILTER_KEY, state.filter || "");
+    render();
+  }
+
   function render() {
+    if (state.filter && !catById(state.filter)) state.filter = null;
+    renderFilters();
     renderCalendar();
     renderDay();
     $("example-notice").hidden = !todos.some((t) => t.example);
@@ -688,12 +839,22 @@ textarea.input { resize: vertical; min-height: 70px; }
     $("f-recurrence").value = String(t ? t.recurrence : 0);
     $("f-hasend").checked = !!(t && t.recurrenceEnd);
     $("f-end").value = (t && t.recurrenceEnd) || addDays(t ? t.date : day, 30);
+    renderCatPick(t ? t.categoryId : state.filter);
     $("btn-delete-in-editor").hidden = !t;
     $("foot-spacer").hidden = !!t;
     syncEditor();
     $("editor").showModal();
     if (!t) setTimeout(() => $("f-title").focus(), 30);
   }
+
+  function renderCatPick(selected) {
+    const sel = catById(selected) ? selected : "";
+    const opt = (id, name, color) =>
+      `<label><input type="radio" name="cat" value="${esc(id)}"${id === sel ? " checked" : ""}>` +
+      `<span class="chip">${color ? `<i class="swatch" style="background:${colorVar(color)}"></i>` : ""}${esc(name)}</span></label>`;
+    $("f-cat").innerHTML = opt("", "Ingen") + categories.map((c) => opt(c.id, c.name, c.color)).join("");
+  }
+  const pickedCat = () => (document.querySelector('input[name="cat"]:checked') || {}).value || null;
 
   function syncEditor() {
     const rec = Number($("f-recurrence").value);
@@ -721,6 +882,7 @@ textarea.input { resize: vertical; min-height: 70px; }
       priority: Number(document.querySelector('input[name="prio"]:checked').value),
       recurrence: rec,
       recurrenceEnd: end,
+      categoryId: pickedCat(),
     };
     const existing = todos.find((t) => t.id === state.editingId);
     if (existing) {
@@ -736,10 +898,65 @@ textarea.input { resize: vertical; min-height: 70px; }
     toast(existing ? "Ändringar sparade" : "Uppgift tillagd");
   }
 
+  // ---------- Kategorier ----------
+  function openCats() {
+    renderCatRows();
+    $("cats").showModal();
+  }
+  function renderCatRows() {
+    const rows = categories.map((c) => {
+      const used = todos.filter((t) => t.categoryId === c.id).length;
+      const palette = COLORS.map(([k, name]) =>
+        `<label><input type="radio" name="color-${esc(c.id)}" value="${k}" aria-label="${name}"${k === c.color ? " checked" : ""}>` +
+        `<span style="background:var(--c-${k})"></span></label>`).join("");
+      return `<div class="cat-row" data-cat="${esc(c.id)}">
+        <div class="cat-row-top">
+          <span class="swatch" style="width:14px;height:14px;background:${colorVar(c.color)}"></span>
+          <input class="input" type="text" id="cat-name-${esc(c.id)}" value="${esc(c.name)}" maxlength="40" aria-label="Namn på kategori">
+          <button type="button" class="icon-btn" data-del-cat aria-label="Radera ${esc(c.name)}">${ICON.trash}</button>
+        </div>
+        <div class="palette" role="radiogroup" aria-label="Färg för ${esc(c.name)}">${palette}</div>
+        <span class="cat-count">${used ? `${used} ${used === 1 ? "uppgift" : "uppgifter"}` : "Inga uppgifter ännu"}</span>
+      </div>`;
+    });
+    $("cat-rows").innerHTML = rows.join("") ||
+      '<p class="hint" style="margin:0">Du har inga kategorier. Tryck på Ny kategori för att skapa en.</p>';
+  }
+  function afterCatChange() {
+    saveCats();
+    render();
+    if ($("editor").open) renderCatPick(pickedCat());
+  }
+  function addCat() {
+    const unused = COLORS.map(([k]) => k).find((k) => !categories.some((c) => c.color === k)) || "gray";
+    const c = normalizeCat({ id: uid(), name: "Ny kategori", color: unused });
+    categories.push(c);
+    afterCatChange();
+    renderCatRows();
+    const input = $(`cat-name-${c.id}`);
+    input.focus(); input.select();
+  }
+  function deleteCat(c) {
+    const used = todos.filter((t) => t.categoryId === c.id).length;
+    const text = used
+      ? `${used} ${used === 1 ? "uppgift" : "uppgifter"} blir utan kategori. Själva uppgifterna finns kvar.`
+      : "Kategorin används inte av några uppgifter.";
+    ask(`Radera ${c.name}?`, text, [{ label: "Radera kategori", danger: true, run: () => {
+      categories = categories.filter((x) => x !== c);
+      todos.forEach((t) => { if (t.categoryId === c.id) t.categoryId = null; });
+      save(); afterCatChange(); renderCatRows();
+      toast("Kategorin är raderad");
+    } }]);
+  }
+
   // ---------- Säkerhetskopia ----------
   let restoreArmed = false;
   function openBackup() {
-    $("backup-text").value = JSON.stringify(todos.map(({ example, ...rest }) => rest), null, 2);
+    $("backup-text").value = JSON.stringify({
+      version: 2,
+      categories,
+      todos: todos.map(({ example, ...rest }) => rest),
+    }, null, 2);
     restoreArmed = false;
     $("btn-restore").textContent = "Återställ";
     $("backup").showModal();
@@ -752,13 +969,16 @@ textarea.input { resize: vertical; min-height: 70px; }
   function restoreBackup() {
     let data;
     try { data = JSON.parse($("backup-text").value); } catch { toast("Texten är inte en giltig säkerhetskopia"); return; }
-    if (!Array.isArray(data)) { toast("Texten är inte en giltig säkerhetskopia"); return; }
+    // Äldre kopior är bara en lista med uppgifter
+    const list = Array.isArray(data) ? data : data && Array.isArray(data.todos) ? data.todos : null;
+    if (!list) { toast("Texten är inte en giltig säkerhetskopia"); return; }
     if (!restoreArmed) {
       restoreArmed = true;
-      $("btn-restore").textContent = `Ersätt med ${data.length} uppgifter?`;
+      $("btn-restore").textContent = `Ersätt med ${list.length} uppgifter?`;
       return;
     }
-    todos = data.map(normalize);
+    if (data && Array.isArray(data.categories)) { categories = data.categories.map(normalizeCat); saveCats(); }
+    todos = list.map(normalize);
     save(); render();
     $("backup").close();
     toast(`${todos.length} uppgifter återställda`);
@@ -777,6 +997,36 @@ textarea.input { resize: vertical; min-height: 70px; }
     $("btn-clear-examples").addEventListener("click", () => {
       todos = todos.filter((t) => !t.example);
       save(); render(); toast("Exemplen är borttagna");
+    });
+
+    $("filters").addEventListener("click", (e) => {
+      if (e.target.closest("[data-manage]")) { openCats(); return; }
+      const b = e.target.closest("[data-filter]");
+      if (b) setFilter(b.dataset.filter);
+    });
+    $("btn-manage-from-editor").addEventListener("click", openCats);
+    $("btn-add-cat").addEventListener("click", addCat);
+    $("cat-rows").addEventListener("input", (e) => {
+      const row = e.target.closest("[data-cat]");
+      const c = row && catById(row.dataset.cat);
+      if (!c) return;
+      if (e.target.type === "text") {
+        c.name = e.target.value.trim().slice(0, 40) || "Namnlös";
+        afterCatChange();
+      }
+    });
+    $("cat-rows").addEventListener("change", (e) => {
+      const row = e.target.closest("[data-cat]");
+      const c = row && catById(row.dataset.cat);
+      if (!c || e.target.type !== "radio") return;
+      c.color = e.target.value;
+      row.querySelector(".cat-row-top .swatch").style.background = colorVar(c.color);
+      afterCatChange();
+    });
+    $("cat-rows").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-del-cat]");
+      const c = b && catById(b.closest("[data-cat]").dataset.cat);
+      if (c) deleteCat(c);
     });
 
     $("cal-grid").addEventListener("click", (e) => {
