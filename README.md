@@ -20,6 +20,11 @@ Hela appen ligger i en enda fil, `web/index.html`.
   - Prickarna i kalendern och strecket vid varje uppgift visas i kategorins färg.
   - Filtrera på en kategori med knapparna ovanför kalendern.
   - Under *Hantera kategorier* skapar du nya kategorier och byter namn och färg. Om du raderar en kategori finns uppgifterna kvar, men utan kategori.
+- **Listvy:** knappen *Lista* i toppen visar alla uppgifter i en lång lista med en rubrik för varje datum.
+  - Överst ligger försenade uppgifter som inte är klara.
+  - Listan visar 60 dagar framåt, och du kan visa fler eller tidigare dagar.
+  - *Visa klara* döljer avbockade uppgifter, och kategorifiltret gäller även här.
+  - Tryck på en datumrubrik för att öppna dagen i kalendern.
 - **Data:** uppgifterna sparas i webbläsaren med `localStorage`. Under *Säkerhetskopia* kan du kopiera ut dem som text och läsa in dem igen.
 - **Kortkommandon:** `←` och `→` byter månad och `N` skapar en ny uppgift.
 - **Skillnad mot iOS-appen:** webbversionen skickar inga påminnelser.
