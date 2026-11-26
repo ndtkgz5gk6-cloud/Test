@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Tidplan Projekt 2021</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: arbetsritning – en smal toppremsa med nyckeltal, sedan ett verktygsfält och en stor arbetsyta (tabell eller tidslinje). */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --surface-2: #e9edf1;
+  --line: #d3dae1;
+  --fg: #16202a;
+  --muted: #5b6875;
+  --accent: #1f5f8b;
+  --accent-soft: #dbe8f2;
+  --good: #23784a;
+  --good-soft: #dcefe3;
+  --warn: #a8640a;
+  --warn-soft: #fbecd2;
+  --bad: #b3342b;
+  --bad-soft: #f8dedb;
+  --mark-orange: #e39a12;
+  --mark-green: #5d9c3c;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151b; --surface: #161e26; --surface-2: #1d2731; --line: #2b3742;
+    --fg: #e4eaf0; --muted: #93a1ae; --accent: #6fb0de; --accent-soft: #1b3448;
+    --good: #5cc28a; --good-soft: #17352a; --warn: #e6a54a; --warn-soft: #3a2b14;
+    --bad: #ef7d73; --bad-soft: #3c1d1b; --mark-orange: #f0ad35; --mark-green: #7cbd5a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151b; --surface: #161e26; --surface-2: #1d2731; --line: #2b3742;
+  --fg: #e4eaf0; --muted: #93a1ae; --accent: #6fb0de; --accent-soft: #1b3448;
+  --good: #5cc28a; --good-soft: #17352a; --warn: #e6a54a; --warn-soft: #3a2b14;
+  --bad: #ef7d73; --bad-soft: #3c1d1b; --mark-orange: #f0ad35; --mark-green: #7cbd5a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); font-stretch: 85%; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 4.2vw, 44px); font-weight: 750; line-height: 1.05; }
+h2 { font-size: 20px; font-weight: 700; }
+.eyebrow { font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Header */
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 32px; border-bottom: 2px solid var(--fg); padding-bottom: 16px; }
+header .meta { display: flex; flex-direction: column; gap: 6px; }
+header p { margin: 0; color: var(--muted); max-width: 62ch; }
+.stamp { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); padding: 6px 10px; background: var(--surface); color: var(--muted); }
+.stamp b { color: var(--fg); font-weight: 500; }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.kpi { background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.kpi .v { font-family: var(--display); font-stretch: 80%; font-size: 32px; font-weight: 700; line-height: 1.1; }
+.kpi .v small { font-size: 16px; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.kpi .s { color: var(--muted); font-size: 13px; }
+.kpi.alert .v { color: var(--warn); }
+@media (max-width: 820px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Sections */
+section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.sec-head p { margin: 0; color: var(--muted); font-size: 13px; }
+.panel { background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.scroll { overflow-x: auto; }
+
+/* Per ansvarig */
+.people { width: 100%; border-collapse: collapse; min-width: 640px; }
+.people th, .people td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.people th { font-family: var(--mono); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--surface-2); }
+.people th:first-child, .people td:first-child { text-align: left; }
+.people td.barcell { width: 34%; }
+.people tr.row { cursor: pointer; }
+.people tr.row:hover td { background: var(--accent-soft); }
+.people tr.row.on td { background: var(--accent-soft); }
+.people tr.row.on td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.people tfoot td { font-weight: 600; border-bottom: 0; }
+.ini { display: inline-grid; place-items: center; width: 30px; height: 22px; font-family: var(--mono); font-size: 12px; font-weight: 500; background: var(--surface-2); border: 1px solid var(--line); margin-right: 8px; }
+.hbar { position: relative; height: 12px; background: var(--surface-2); }
+.hbar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
+.hbar i.res { background: var(--good); opacity: .85; }
+
+/* Toolbar */
+.toolbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 16px -12px rgba(0,0,0,.35); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.search { flex: 1 1 220px; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--bg); padding: 0 10px; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--fg); font: inherit; padding: 8px 0; outline: none; }
+.search:focus-within { border-color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); }
+.seg button { border: 0; background: transparent; padding: 7px 11px; cursor: pointer; font-size: 13px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--surface-2); }
+select { font: inherit; font-size: 13px; padding: 7px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.count { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+
+/* Projekttabell */
+table.proj { width: 100%; border-collapse: collapse; min-width: 1120px; }
+.proj th, .proj td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.proj thead th { position: sticky; top: 0; background: var(--surface-2); font-family: var(--mono); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; cursor: pointer; user-select: none; }
+.proj thead th:hover { color: var(--fg); }
+.proj thead th[aria-sort="ascending"]::after { content: " ▲"; color: var(--accent); }
+.proj thead th[aria-sort="descending"]::after { content: " ▼"; color: var(--accent); }
+.proj td.r, .proj th.r { text-align: right; white-space: nowrap; }
+.proj tbody tr:hover td { background: var(--accent-soft); }
+.proj .name { font-weight: 600; }
+.proj .cust { color: var(--muted); font-size: 12.5px; }
+.proj .ord { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.proj td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.proj tr.group td { background: var(--surface-2); font-weight: 600; border-top: 1px solid var(--line); }
+.proj tr.group:hover td { background: var(--surface-2); }
+.proj tr.group .g-name { font-family: var(--display); font-stretch: 85%; font-size: 15px; }
+.proj tfoot td { font-weight: 600; border-top: 2px solid var(--fg); border-bottom: 0; background: var(--surface); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+.dot.orange { background: var(--mark-orange); }
+.dot.green { background: var(--mark-green); }
+.dot.none { background: transparent; border: 1px dashed var(--line); }
+.pill { display: inline-block; font-size: 11.5px; font-weight: 500; padding: 1px 7px; border-radius: 3px; white-space: nowrap; line-height: 1.6; }
+.pill.b { background: var(--accent-soft); color: var(--accent); }
+.pill.o { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.pill.good { background: var(--good-soft); color: var(--good); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.neg { color: var(--bad); }
+.tg { display: inline-block; min-width: 46px; text-align: right; }
+.tg.low { color: var(--bad); }
+.tg.mid { color: var(--warn); }
+.prog { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.prog .track { width: 56px; height: 6px; background: var(--surface-2); position: relative; flex: none; }
+.prog .track i { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
+.prog .track.over i { background: var(--bad); }
+.check { color: var(--good); font-weight: 600; }
+.nocheck { color: var(--muted); }
+.note { font-size: 12px; color: var(--warn); display: block; max-width: 22ch; white-space: normal; }
+.flagcell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 200px; }
+.empty { padding: 32px; text-align: center; color: var(--muted); }
+
+/* Tidslinje */
+.gantt { min-width: 980px; position: relative; }
+.g-axis, .g-row { display: grid; grid-template-columns: 260px 1fr; }
+.g-axis { position: sticky; top: 0; z-index: 2; background: var(--surface-2); border-bottom: 1px solid var(--line); height: 30px; }
+.g-axis .lab { padding: 7px 12px; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.g-track { position: relative; }
+.g-year { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 7px 0 0 5px; }
+.g-row { border-bottom: 1px solid var(--line); min-height: 30px; }
+.g-row:hover { background: var(--accent-soft); }
+.g-row .lab { padding: 5px 12px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+.g-row .lab .mono { color: var(--muted); font-size: 11.5px; flex: none; }
+.g-row .lab .nm { overflow: hidden; text-overflow: ellipsis; }
+.g-grp { padding: 6px 12px; background: var(--surface-2); font-family: var(--display); font-stretch: 85%; font-weight: 700; font-size: 15px; border-bottom: 1px solid var(--line); }
+.g-bg { position: absolute; inset: 0; pointer-events: none; }
+.g-bg i { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); opacity: .6; }
+.g-now { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--warn); z-index: 1; pointer-events: none; }
+.g-now span { position: absolute; top: 4px; left: 4px; font-family: var(--mono); font-size: 10.5px; color: var(--warn); white-space: nowrap; background: var(--surface-2); padding: 0 3px; }
+.bar { position: absolute; top: 9px; height: 12px; background: var(--accent-soft); border: 1px solid var(--accent); }
+.bar .build { position: absolute; top: -1px; bottom: -1px; right: -1px; background: var(--accent); }
+.bar.overdue { border-color: var(--bad); background: var(--bad-soft); }
+.bar.overdue .build { background: var(--bad); }
+.bar.open { border-right-style: dashed; background: linear-gradient(90deg, var(--accent-soft) 70%, transparent); }
+.bar.yearonly { border-right-style: dashed; }
+.bar .end { position: absolute; right: -5px; top: -3px; width: 8px; height: 16px; background: var(--fg); }
+.bar.open .end { display: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12.5px; color: var(--muted); padding: 10px 12px; border-top: 1px solid var(--line); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 22px; height: 10px; border: 1px solid var(--accent); background: var(--accent-soft); }
+.sw.b { background: var(--accent); }
+.sw.r { border-color: var(--bad); background: var(--bad-soft); }
+
+/* Att åtgärda */
+.issues { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.issue { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.issue h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.issue h3 .n { font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 1px 7px; border-radius: 3px; }
+.issue p { margin: 0; color: var(--muted); font-size: 13px; }
+.issue ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.issue li { display: flex; gap: 8px; font-size: 13px; min-width: 0; }
+.issue li .mono { color: var(--muted); font-size: 12px; flex: none; width: 70px; }
+.issue li .t { min-width: 0; }
+.issue li .t em { font-style: normal; color: var(--muted); }
+
+footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 4px; }
+footer p { margin: 0; max-width: 90ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="meta">
+      <span class="eyebrow">Projektportfölj · Skåne</span>
+      <h1>Tidplan Projekt 2021</h1>
+      <p>Alla pågående och kommande projekt med ekonomi, tidplan fram till slutbesiktning och en lista över uppgifter som behöver kompletteras.</p>
+    </div>
+    <div class="stamp">Läge: <b>januari 2021</b> · senaste projektdatum <b>2021-01-05</b></div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Per projektansvarig</h2>
+      <p>Klicka på en rad för att filtrera projekten nedan.</p>
+    </div>
+    <div class="panel scroll"><table class="people" id="people"></table></div>
+  </section>
+
+  <section id="projekt">
+    <div class="sec-head">
+      <h2>Projekt</h2>
+      <p>Belopp i tkr. TG = täckningsgrad (beräknat resultat ÷ försäljning).</p>
+    </div>
+    <div class="toolbar">
+      <label class="search" for="q">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input id="q" type="search" placeholder="Sök order, projekt eller kund" autocomplete="off">
+      </label>
+      <select id="fa" aria-label="Projektansvarig"><option value="">Alla ansvariga</option></select>
+      <div class="seg" role="group" aria-label="Status" id="fs">
+        <button type="button" data-v="" aria-pressed="true">Alla</button>
+        <button type="button" data-v="B" aria-pressed="false">B</button>
+        <button type="button" data-v="O" aria-pressed="false">O</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="fi"> Endast att åtgärda</label>
+      <div class="seg" role="group" aria-label="Vy" id="view">
+        <button type="button" data-v="tabell" aria-pressed="true">Tabell</button>
+        <button type="button" data-v="tidslinje" aria-pressed="false">Tidslinje</button>
+      </div>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="panel scroll" id="tableView"></div>
+    <div class="panel" id="ganttView" hidden>
+      <div class="scroll" id="ganttScroll"></div>
+      <div class="legend">
+        <span><i class="sw"></i>Projektdatum → slutbesiktning</span>
+        <span><i class="sw b"></i>Byggtid (från beräknad byggstart)</span>
+        <span><i class="sw r"></i>Slutbesiktning passerad vid läget jan 2021</span>
+        <span><i class="dot orange"></i><i class="dot green"></i>Färgmarkering från originalfilen</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Att åtgärda i tidplanen</h2>
+      <p>Uppgifter som saknas, är otydliga eller ser fel ut i originalfilen.</p>
+    </div>
+    <div class="issues" id="issues"></div>
+  </section>
+
+  <footer>
+    <p>Källa: Tidplan_Projekt_2021.xlsx (Blad1, 73 projekt). Beräknat resultat för P20026 var en formel i originalet (försäljning − kalkyl) och har räknats ut här.</p>
+    <p>Statuskoderna B och O och färgmarkeringarna på ordernumren visas som i originalet, eftersom deras betydelse inte står i filen.</p>
+  </footer>
+</div>
+
+<script>
+const DATA = [
+{"o": "P018137", "a": "HT", "s": "B", "pd": "2018-12-12", "bs": null, "k": "Midroc Construction AB", "n": "Draken Södra Hus 4-6", "f": 3300000, "ka": 2972150, "os": 202060.09, "r": 327850, "ki": true, "sb": "2021-03-30", "m": null},
+{"o": "P018138", "a": "HT", "s": "B", "pd": "2018-12-12", "bs": null, "k": "Midroc Construction AB", "n": "Kv Veterinären 1, Kävlinge", "f": 4000000, "ka": 3447050, "os": -1135347.42, "r": 552950, "ki": true, "sb": "2021-03-30", "m": null},
+{"o": "P019018", "a": "HT", "s": "B", "pd": "2019-01-28", "bs": null, "k": "BetonmastHaehre Malmö AB", "n": "Kv Ugglan, Burlöv", "f": 6600000, "ka": 6234583, "os": 709508.31, "r": 365417, "ki": true, "sb": "2021-05-30", "m": null},
+{"o": "P019020", "a": "HT", "s": "B", "pd": "2019-01-30", "bs": null, "k": "NBI Bygg AB", "n": "Kv Sjöporten 1, Västra Hamnen", "f": 5700000, "ka": 5000000, "os": 4319255.52, "r": 700000, "ki": false, "sb": "2022-02-28", "m": null},
+{"o": "P019044", "a": "HT", "s": "B", "pd": "2019-04-16", "bs": null, "k": "Peab Sverige AB", "n": "Kv Spåret 1, Norra Sorgenfri", "f": 6000000, "ka": 4820014, "os": 1215122.74, "r": 1179986, "ki": true, "sb": "2021-07-12", "m": null},
+{"o": "P019054", "a": "HT", "s": "B", "pd": "2019-05-03", "bs": null, "k": "NIMAB Entreprenad AB", "n": "Kv Svanen, Svedala", "f": 5590000, "ka": 4977443, "os": 1606944.18, "r": 612557, "ki": true, "sb": "2021-07-12", "m": null},
+{"o": "P17134", "a": "HT", "s": "B", "pd": "2017-11-07", "bs": null, "k": "Peab Sverige AB", "n": "Lilla Varvsgatan Dockan", "f": 6000000, "ka": 5955400, "os": 40812.25, "r": 44600, "ki": true, "sb": "2021-03-01", "m": null},
+{"o": "P18071", "a": "HT", "s": "B", "pd": "2018-07-05", "bs": null, "k": "Byggnadsf:a Otto Magnusson AB", "n": "Gränden LKF, Lund", "f": 9000000, "ka": 7650000, "os": 1749092.94, "r": 1350000, "ki": false, "sb": "2022-01-30", "m": null},
+{"o": "P19126", "a": "HT", "s": "B", "pd": "2019-07-15", "bs": null, "k": "MVB Syd AB", "n": "Bonum Åkarp, Riksbyggen", "f": 2800000, "ka": 2465000, "os": 2165310.74, "r": 335000, "ki": false, "sb": "2021-12-31", "m": null},
+{"o": "P19138", "a": "HT", "s": "B", "pd": "2019-08-29", "bs": null, "k": "Malmö Byggcenter AB", "n": "Nya Fädriften Falsterbo", "f": 950000, "ka": 834900, "os": 101746.5, "r": 115100, "ki": true, "sb": "2021-03-01", "m": null},
+{"o": "P19182", "a": "HT", "s": "B", "pd": "2019-11-28", "bs": null, "k": "Byggnadsf:a Otto Magnusson AB", "n": "Fabriken, P-Hus Hyllie", "f": 2400000, "ka": 2115000, "os": 1879132.66, "r": 285000, "ki": false, "sb": "2021-07-01", "m": null},
+{"o": "P20117", "a": "HT", "s": "O", "pd": "2020-10-19", "bs": null, "k": "Fastec", "n": "Stora Bernstorp, omb butik", "f": 120000, "ka": 106000, "os": 105266, "r": 14000, "ki": false, "sb": "2021-03-01", "m": null},
+{"o": "P019056", "a": "JD", "s": "B", "pd": "2019-05-10", "bs": null, "k": "Byggnadsf:a Otto Magnusson AB", "n": "Kv Slaktaren, Eslöv", "f": 5500000, "ka": 5256100, "os": 2872668.74, "r": 243900, "ki": true, "sb": "2021-02-15", "m": null},
+{"o": "P17140", "a": "JD", "s": "B", "pd": "2017-11-22", "bs": null, "k": "Serneke Bygg AB", "n": "Ophelias Brygga Helsingborg", "f": 6300000, "ka": 5488599, "os": 785718.92, "r": 811401, "ki": true, "sb": "2021-01-29", "m": null},
+{"o": "P21002", "a": "JD", "s": "O", "pd": "2021-01-05", "bs": null, "k": "Skanska Sverige AB", "n": "Västeräng Skurup", "f": 2700000, "ka": 2375000, "os": 2375000, "r": 325000, "ki": false, "sb": null, "m": null},
+{"o": "P018134", "a": "JL", "s": "B", "pd": "2018-11-28", "bs": null, "k": "Midroc Construction AB", "n": "Kv Aktern 3 Västra Hamnen", "f": 4400000, "ka": 3663300, "os": 825843.7, "r": 736700, "ki": true, "sb": "2021-06-15", "m": null},
+{"o": "P019016", "a": "JL", "s": "B", "pd": "2019-01-25", "bs": null, "k": "Wästbygg AB", "n": "Kv Gjutformen, Limhamn", "f": 15100000, "ka": 13300000, "os": 1124724.02, "r": 1800000, "ki": false, "sb": "2021-01-15", "m": null},
+{"o": "P019052", "a": "JL", "s": "B", "pd": "2019-05-03", "bs": null, "k": "NIMAB Entreprenad AB", "n": "Kv Paragrafen Lund", "f": 7700000, "ka": 5978093, "os": 3243542.4, "r": 1721907, "ki": true, "sb": "2021-12-15", "m": null},
+{"o": "P18082", "a": "JL", "s": "B", "pd": "2018-08-20", "bs": null, "k": "Peab Sverige AB", "n": "Kv Katthult 1 Malmö", "f": 5400000, "ka": 4650000, "os": 1334854.73, "r": 750000, "ki": false, "sb": "2020-12-15", "m": null},
+{"o": "P19158", "a": "JL", "s": "B", "pd": "2019-10-14", "bs": null, "k": "NIMAB Entreprenad AB", "n": "Stjärnfyren (Bilen 24)", "f": 4350000, "ka": 3419280, "os": 2517657.55, "r": 930720, "ki": true, "sb": "2022-04-01", "m": null},
+{"o": "P19160", "a": "JL", "s": "B", "pd": "2019-10-16", "bs": null, "k": "Thage i Skåne AB", "n": "Villa Fridsbo LSS (Dreviken)", "f": 3750000, "ka": 3300000, "os": 3034375.5, "r": 450000, "ki": false, "sb": "2021-12-15", "m": null},
+{"o": "P19165", "a": "JL", "s": "B", "pd": "2019-10-25", "bs": null, "k": "NIMAB Entreprenad AB", "n": "Svea Park", "f": 3700000, "ka": 3250000, "os": 3079506, "r": 450000, "ki": false, "sb": "har inte fått bes", "m": null},
+{"o": "P19184", "a": "JL", "s": "B", "pd": "2019-12-09", "bs": null, "k": "NCC Construction Sverige AB", "n": "Nya Fädriften Falsterbo", "f": 590000, "ka": 520000, "os": 473940.62, "r": 70000, "ki": false, "sb": "2021-05-01", "m": null},
+{"o": "P20001", "a": "JL", "s": "B", "pd": "2020-01-10", "bs": null, "k": "Peab Sverige AB", "n": "Domstolsbyggnad Malmö", "f": 47500000, "ka": 42000000, "os": 39416194.5, "r": 5500000, "ki": false, "sb": "2023-12-10", "m": null},
+{"o": "P20002", "a": "JL", "s": "B", "pd": "2020-01-13", "bs": "2019-11-25", "k": "Betonmast Malmö AB", "n": "Skymningen 5, Lund", "f": 8200000, "ka": 7400000, "os": 6251117.38, "r": 800000, "ki": true, "sb": "2021-12-30", "m": null},
+{"o": "P20026", "a": "JL", "s": "B", "pd": "2019-03-25", "bs": null, "k": "Peab Sverige AB", "n": "Hbg Lasarett NSH Norra Flygeln", "f": 16600000, "ka": 14610000, "os": 7835432.97, "r": 1990000, "ki": false, "sb": "2021-05-15", "m": null},
+{"o": "P20035", "a": "JL", "s": "B", "pd": "2020-03-06", "bs": null, "k": "Serneke Sverige AB", "n": "Råbylund Sektion A Etapp 1", "f": 10700000, "ka": 9416000, "os": 9214855, "r": 1284000, "ki": false, "sb": "2023-12-30", "m": null},
+{"o": "P20069", "a": "JL", "s": "B", "pd": "2020-06-09", "bs": null, "k": "NIMAB Entreprenad AB", "n": "Blekingska Nation", "f": 7880000, "ka": 6935000, "os": 6784666.87, "r": 945000, "ki": false, "sb": "2022-05-15", "m": null},
+{"o": "P20076", "a": "JL", "s": "B", "pd": "2020-06-16", "bs": "2021-01-05", "k": "Midroc Construction AB", "n": "Bjerreds Torg", "f": 3900000, "ka": 3435000, "os": 3214600, "r": 465000, "ki": false, "sb": "2023-03-15", "m": null},
+{"o": "P20077", "a": "JL", "s": "B", "pd": "2020-06-16", "bs": "2020-11-01", "k": "Midroc Construction AB", "n": "Lägerplatsen Landskrona", "f": 2350000, "ka": 2068000, "os": 1999328, "r": 282000, "ki": false, "sb": "2022-05-01", "m": null},
+{"o": "P20084", "a": "JL", "s": "B", "pd": "2020-07-03", "bs": null, "k": "NBI Bygg AB", "n": "Dadeln", "f": 3000000, "ka": 2640000, "os": 2539800, "r": 360000, "ki": false, "sb": "2022-03-15", "m": null},
+{"o": "P20097", "a": "JL", "s": "B", "pd": "2020-08-18", "bs": null, "k": "BetonmastHaehre Malmö AB", "n": "Röshult 1 (Brännaren 18) Malmö", "f": 7600000, "ka": 6690000, "os": 6651000, "r": 910000, "ki": false, "sb": "2022-06-15", "m": null},
+{"o": "P20099", "a": "JL", "s": "B", "pd": "2020-08-28", "bs": null, "k": "Thage i Skåne AB", "n": "Bellevuegården", "f": 6190000, "ka": 5445000, "os": 5389200, "r": 745000, "ki": false, "sb": "2022-12-12", "m": null},
+{"o": "P20100", "a": "JL", "s": "B", "pd": "2020-03-06", "bs": null, "k": "Serneke Sverige AB", "n": "Råbylund Sektion B Etapp 2", "f": 8600000, "ka": 7568000, "os": 7506200, "r": 1032000, "ki": false, "sb": 2023, "m": null},
+{"o": "P20101", "a": "JL", "s": "B", "pd": "2020-03-06", "bs": null, "k": "Serneke Sverige AB", "n": "Råbylund Sektion C Etapp 3", "f": 6470000, "ka": 5694000, "os": 5631000, "r": 776000, "ki": false, "sb": 2024, "m": null},
+{"o": "P20102", "a": "JL", "s": "B", "pd": "2020-03-06", "bs": null, "k": "Serneke Sverige AB", "n": "Råbylund Sektion D Etapp 4", "f": 4260000, "ka": 3749000, "os": 3725000, "r": 511000, "ki": false, "sb": 2025, "m": null},
+{"o": "P20103", "a": "JL", "s": "B", "pd": "2020-03-06", "bs": null, "k": "Serneke Sverige AB", "n": "Råbylund Sektion E Etapp 5", "f": 11220000, "ka": 9874000, "os": 9829000, "r": 1346000, "ki": false, "sb": 2026, "m": null},
+{"o": "P20120", "a": "JL", "s": "B", "pd": "2020-10-19", "bs": null, "k": "Midroc Construction AB", "n": "Brf Life Brunnshög", "f": 2300000, "ka": 2023700, "os": 2023700, "r": 276300, "ki": false, "sb": "ta bort", "m": null},
+{"o": "P20123", "a": "JL", "s": "B", "pd": "2020-10-28", "bs": null, "k": "Malmö Gjutaren Förvaltning AB", "n": "Gjutformen 2, hyresgästanpassning", "f": 1230000, "ka": 1080000, "os": 593449.09, "r": 150000, "ki": false, "sb": "2021-02-15", "m": null},
+{"o": "P20125", "a": "JL", "s": "B", "pd": "2020-11-24", "bs": "2021-07-05", "k": null, "n": "Stella Västra Hamnen", "f": 3950000, "ka": 3475000, "os": 3473200, "r": 475000, "ki": false, "sb": "2023-06-30", "m": null},
+{"o": "P20127", "a": "JL", "s": "B", "pd": "2020-11-24", "bs": null, "k": "NBI Bygg AB", "n": "Solblomman Vellinge", "f": 2850000, "ka": 2508000, "os": 2508000, "r": 342000, "ki": false, "sb": "2023-01-01", "m": null},
+{"o": "P20132", "a": "JL", "s": "B", "pd": "2020-12-12", "bs": null, "k": null, "n": "Hyllie Homes", "f": 4100000, "ka": 3600000, "os": 3600000, "r": 500000, "ki": false, "sb": "2023-05-15", "m": null},
+{"o": "P21001", "a": "JL", "s": "O", "pd": "2021-01-04", "bs": null, "k": null, "n": "Kvartetten", "f": 34870000, "ka": 30685000, "os": 30685000, "r": 4185000, "ki": false, "sb": "2023-04-15", "m": null},
+{"o": "P19156", "a": "JS", "s": "O", "pd": "2019-10-11", "bs": null, "k": "Skanska Direkt AB", "n": "Krönet 7, vindslägenhet Malmö", "f": 300000, "ka": 265000, "os": 76302, "r": 35000, "ki": false, "sb": null, "m": null},
+{"o": "P20088", "a": "JS", "s": "B", "pd": "2020-07-06", "bs": null, "k": "MKB Fastighets AB", "n": "Vendelsfrid 2, byte av fläktar", "f": 1790000, "ka": 1569500, "os": 90555.2, "r": 220500, "ki": true, "sb": "2020-12-10", "m": null},
+{"o": "P019047", "a": "NL", "s": "B", "pd": "2019-04-17", "bs": null, "k": "Con Total Projekthantering AB", "n": "Moment Hotels Malmö", "f": 3000000, "ka": 2688325, "os": 127566.39, "r": 311675, "ki": true, "sb": "2020-09-01", "m": null},
+{"o": "P19177", "a": "NL", "s": "B", "pd": "2019-11-20", "bs": null, "k": "Vejbygruppen AB", "n": "Vårdboende Vejbystrand", "f": 3390000, "ka": 3450665, "os": 1017165.72, "r": -60665, "ki": true, "sb": "2021-08-01", "m": null},
+{"o": "P20045", "a": "SM", "s": "B", "pd": "2020-03-24", "bs": null, "k": "Servicekuben AB", "n": "Frans Suell plan 4", "f": 2493000, "ka": 2493000, "os": 142306.39, "r": 0, "ki": true, "sb": "2021-01-15", "m": null},
+{"o": "P20119", "a": "SM", "s": "B", "pd": "2020-10-19", "bs": "2020-10-19", "k": "WBygg & Fastighets AB", "n": "Altona 21 våning 7", "f": 1350000, "ka": 695000, "os": 646146, "r": 655000, "ki": true, "sb": "2021-03-19", "m": null},
+{"o": "P20126", "a": "SM", "s": "O", "pd": "2020-11-24", "bs": null, "k": "Morneon Fasad AB", "n": "Guldborgen Malmö", "f": 470000, "ka": 414000, "os": 409800, "r": 56000, "ki": false, "sb": null, "m": null},
+{"o": "P20128", "a": "SM", "s": "O", "pd": "2020-11-25", "bs": "2021-01-11", "k": "E.ON Värme AB", "n": "ESS Lund Etapp 2", "f": 3200000, "ka": 2604000, "os": 2604000, "r": 596000, "ki": true, "sb": "2021-05-03", "m": null},
+{"o": "P20129", "a": "SM", "s": "O", "pd": "2020-11-25", "bs": null, "k": "MVB", "n": "Oxie Centrum Tandläkare", "f": null, "ka": null, "os": -119482.17, "r": 0, "ki": false, "sb": null, "m": null},
+{"o": "P20130", "a": "SM", "s": "O", "pd": "2020-11-30", "bs": null, "k": "Stena Fastigheter  Malmö AB", "n": "Mäster Johangatan 6 Aggregatbyte", "f": 375000, "ka": 330000, "os": 330000, "r": 45000, "ki": false, "sb": null, "m": null},
+{"o": "P019025", "a": "TN", "s": "B", "pd": "2019-02-25", "bs": "startat", "k": "Allbygg i Höganäs AB", "n": "Regula 1 Helsingborg", "f": 21530000, "ka": 18950000, "os": 16088640.23, "r": 2580000, "ki": false, "sb": "2022-01-01", "m": "orange"},
+{"o": "P18085", "a": "TN", "s": "B", "pd": "2018-08-29", "bs": "startat", "k": "Wästbygg AB", "n": "Brf Blomstra", "f": 2925000, "ka": 2575000, "os": 43159.76, "r": 350000, "ki": false, "sb": "2021-04-01", "m": "green"},
+{"o": "P19113", "a": "TN", "s": "B", "pd": "2019-06-20", "bs": "startat", "k": "Allbygg i Höganäs AB", "n": "Primula 1 & 2", "f": 5616000, "ka": 4942000, "os": 4204212, "r": 674000, "ki": false, "sb": "2022-02-01", "m": "orange"},
+{"o": "P19123", "a": "TN", "s": "B", "pd": "2019-07-15", "bs": "startat", "k": "NBI Bygg AB", "n": "Mammutträdet, Ystad", "f": 4132500, "ka": 3700474, "os": 1355352, "r": 432026, "ki": true, "sb": "2021-06-11", "m": "green"},
+{"o": "P19161", "a": "TN", "s": "B", "pd": "2019-10-17", "bs": "startat", "k": "Kebab, Knut Edstrands Byggnads AB", "n": "Celsius 1 Ystad", "f": 3585000, "ka": 3155000, "os": 1679992.16, "r": 430000, "ki": false, "sb": "2021-06-01", "m": "green"},
+{"o": "P19162", "a": "TN", "s": "B", "pd": "2019-10-17", "bs": "startat", "k": "NCC Sverige AB", "n": "Gullåkraskolan Staffanstorp", "f": 9154000, "ka": 8055000, "os": 5179807.8, "r": 1099000, "ki": false, "sb": "2021-09-30", "m": null},
+{"o": "P20032", "a": "TN", "s": "B", "pd": "2020-02-21", "bs": "oklart", "k": "NIMAB Entreprenad AB", "n": "Kv Yxan 4, Tomelilla", "f": 1650000, "ka": 1450000, "os": 1373505, "r": 200000, "ki": false, "sb": "Oklart inväntar besked om investering", "m": null},
+{"o": "P20049", "a": "TN", "s": "B", "pd": "2020-04-09", "bs": "2021-08-02", "k": "Byggnads AB Tornstaden Syd", "n": "S Ribersborg", "f": 7100000, "ka": 6250000, "os": 6106715, "r": 850000, "ki": false, "sb": "2023-02-17", "m": null},
+{"o": "P20056", "a": "TN", "s": "B", "pd": "2020-04-27", "bs": "oklart", "k": "Peab Sverige AB", "n": "Carl Florman", "f": 2590000, "ka": 2280000, "os": 2225764.25, "r": 310000, "ki": false, "sb": "oklart, inväntar startbesked", "m": null},
+{"o": "P20067", "a": "TN", "s": "B", "pd": "2020-05-27", "bs": "startat", "k": "NCC Sverige AB", "n": "Revingehed ny förl.byggnad", "f": 5300000, "ka": 4665000, "os": 4307163.03, "r": 635000, "ki": false, "sb": "2022-05-20", "m": "orange"},
+{"o": "P20073", "a": "TN", "s": "B", "pd": "2020-06-10", "bs": "startat", "k": "HL Bygg och Fastighetsservice AB", "n": "Möllegården Rydsgård", "f": 885000, "ka": 780000, "os": 238145.62, "r": 105000, "ki": false, "sb": "2021-05-01", "m": "green"},
+{"o": "P20079", "a": "TN", "s": "B", "pd": "2020-06-16", "bs": "2021-05-01", "k": "Svetslagret i Hammenhög AB", "n": "Cylindern 2 Ystad", "f": 3300000, "ka": 2900000, "os": 2871547.75, "r": 400000, "ki": false, "sb": "2021-09-01", "m": "orange"},
+{"o": "P20083", "a": "TN", "s": "B", "pd": "2020-06-30", "bs": "2021-08-01", "k": "HL Bygg och Fastighetsservice AB", "n": "Skivarp Förskola", "f": 1860000, "ka": 1635000, "os": 1539000, "r": 225000, "ki": false, "sb": "2022-04-01", "m": "orange"},
+{"o": "P20085", "a": "TN", "s": "O", "pd": "2020-07-06", "bs": "startat", "k": "Karaten Bygg AB", "n": "Ängslyckan Nybrostrand", "f": 360000, "ka": 317000, "os": 286772.6, "r": 43000, "ki": false, "sb": "2021-03-01", "m": "green"},
+{"o": "P20093", "a": "TN", "s": "B", "pd": "2020-08-05", "bs": "2021-08-01", "k": "HL Bygg och Fastighetsservice AB", "n": "Rydsgård Skola", "f": 8000000, "ka": 7040000, "os": 6901535, "r": 960000, "ki": false, "sb": "2022-05-01", "m": "orange"},
+{"o": "P20110", "a": "TN", "s": "B", "pd": "2020-09-21", "bs": "2021-03-01", "k": "Kebab, Knut Edstrands Byggnads AB", "n": "Padelhall Tomelilla", "f": 660000, "ka": 580000, "os": 575800, "r": 80000, "ki": false, "sb": "2021-08-01", "m": null},
+{"o": "P20118", "a": "TN", "s": "B", "pd": "2020-10-19", "bs": "startat", "k": "HL Bygg och Fastighetsservice AB", "n": "Kv Göte Västergatan 44", "f": 1952000, "ka": 1718400, "os": 1679793, "r": 233600, "ki": false, "sb": "2021-06-01", "m": null},
+{"o": "Ä1917901", "a": "TN", "s": "B", "pd": "2020-05-13", "bs": "startat", "k": "Veidekke Entreprenad AB", "n": "Triton, Kontorsdel", "f": 14500000, "ka": 12760000, "os": 11596622.55, "r": 1740000, "ki": false, "sb": "2022-04-01", "m": "orange"},
+{"o": "Ä1917902", "a": "TN", "s": "B", "pd": "2020-05-13", "bs": "startat", "k": "Veidekke Entreprenad AB", "n": "Triton, Vårdbyggnadsdel", "f": 3225000, "ka": 2838000, "os": 2757957, "r": 387000, "ki": false, "sb": "2022-10-01", "m": "orange"},
+{"o": "Ä1917903", "a": "TN", "s": "B", "pd": "2020-05-13", "bs": "startat", "k": "Veidekke Entreprenad AB", "n": "Triton, Bostadsdel", "f": 3225000, "ka": 2838000, "os": 2717887.5, "r": 387000, "ki": false, "sb": "2022-10-01", "m": "orange"}
+];
+const PLAN_DATE = "2021-01-05";
+const NAMES = {}; // fyll i fullständiga namn här, t.ex. { JL: "Johan L." }
+
+const tkr = v => v == null ? "–" : Math.round(v / 1000).toLocaleString("sv-SE");
+const msek = v => (v / 1e6).toLocaleString("sv-SE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const pct = v => v == null || !isFinite(v) ? "–" : (v * 100).toLocaleString("sv-SE", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + " %";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const isDate = v => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+
+// Normalisera rader
+const P = DATA.map(d => {
+  const p = { ...d };
+  p.f = d.f ?? null; p.ka = d.ka ?? null;
+  p.tg = p.f ? d.r / p.f : null;
+  p.kvar = p.f ? d.os / p.f : null;
+  p.sbDate = isDate(d.sb) ? d.sb : (typeof d.sb === "number" ? d.sb + "-12-31" : null);
+  p.sbYearOnly = typeof d.sb === "number";
+  p.sbNote = typeof d.sb === "string" && !isDate(d.sb) ? d.sb : null;
+  p.bsDate = isDate(d.bs) ? d.bs : null;
+  p.bsText = typeof d.bs === "string" && !isDate(d.bs) ? d.bs : null;
+  p.flags = [];
+  if (!d.k) p.flags.push(["Kund saknas", "warn", "kund"]);
+  if (d.f == null) p.flags.push(["Försäljning saknas", "bad", "eko"]);
+  if (d.os < 0) p.flags.push(["Negativ orderstock", "bad", "eko"]);
+  if (d.r < 0) p.flags.push(["Negativt resultat", "bad", "eko"]);
+  if (p.sbNote) p.flags.push([/ta bort/i.test(d.sb) ? "Markerad ”ta bort”" : "Slutbesiktning oklar", "warn", "sb"]);
+  else if (p.sbYearOnly) p.flags.push(["Endast år", "warn", "sb"]);
+  else if (!d.sb) p.flags.push(["Slutbesiktning saknas", "warn", "sb"]);
+  if (p.sbDate && !p.sbYearOnly && p.sbDate < PLAN_DATE) p.flags.push(["Slutbes. passerad", "bad", "sen"]);
+  if (p.bsDate && d.pd && p.bsDate < d.pd) p.flags.push(["Byggstart före projektdatum", "warn", "datum"]);
+  return p;
+});
+
+const state = { q: "", a: "", s: "", issues: false, view: "tabell", sort: { key: "a", dir: 1 } };
+try { const v = localStorage.getItem("tp-view"); if (v === "tidslinje" || v === "tabell") state.view = v; } catch (e) {}
+
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  return P.filter(p =>
+    (!state.a || p.a === state.a) &&
+    (!state.s || p.s === state.s) &&
+    (!state.issues || p.flags.length) &&
+    (!q || [p.o, p.n, p.k].some(x => x && x.toLowerCase().includes(q)))
+  );
+}
+const sum = (arr, k) => arr.reduce((s, p) => s + (p[k] || 0), 0);
+
+/* KPI */
+function renderKpis() {
+  const f = sum(P, "f"), r = sum(P, "r"), os = sum(P, "os");
+  const nIss = P.filter(p => p.flags.length).length;
+  const late = P.filter(p => p.flags.some(x => x[2] === "sen")).length;
+  document.getElementById("kpis").innerHTML = `
+    <div class="kpi"><span class="eyebrow">Försäljning totalt</span><span class="v num">${msek(f)}<small>Mkr</small></span><span class="s">${P.length} projekt, ${P.filter(p=>p.s==="B").length} med status B</span></div>
+    <div class="kpi"><span class="eyebrow">Beräknat resultat</span><span class="v num">${msek(r)}<small>Mkr</small></span><span class="s">Täckningsgrad ${pct(r / f)}</span></div>
+    <div class="kpi"><span class="eyebrow">Orderstock</span><span class="v num">${msek(os)}<small>Mkr</small></span><span class="s">${pct(os / f)} av försäljningen återstår</span></div>
+    <div class="kpi alert"><span class="eyebrow">Att åtgärda</span><span class="v num">${nIss}<small>projekt</small></span><span class="s">varav ${late} med passerad slutbesiktning</span></div>`;
+}
+
+/* Per ansvarig */
+function renderPeople() {
+  const groups = [...new Set(P.map(p => p.a))].map(a => {
+    const rows = P.filter(p => p.a === a);
+    return { a, n: rows.length, f: sum(rows, "f"), r: sum(rows, "r"), os: sum(rows, "os"), iss: rows.filter(p => p.flags.length).length };
+  }).sort((x, y) => y.f - x.f);
+  const max = Math.max(...groups.map(g => g.f));
+  const tf = sum(P, "f"), tr = sum(P, "r"), tos = sum(P, "os");
+  document.getElementById("people").innerHTML = `
+    <thead><tr><th>Ansvarig</th><th>Projekt</th><th>Försäljning (tkr)</th><th>Resultat (tkr)</th><th>TG</th><th>Orderstock (tkr)</th><th>Att åtgärda</th><th>Andel av försäljning / resultat</th></tr></thead>
+    <tbody>${groups.map(g => `
+      <tr class="row ${state.a === g.a ? "on" : ""}" data-a="${g.a}" tabindex="0">
+        <td><span class="ini">${g.a}</span>${esc(NAMES[g.a] || "")}</td>
+        <td class="num">${g.n}</td>
+        <td class="num">${tkr(g.f)}</td>
+        <td class="num">${tkr(g.r)}</td>
+        <td class="num">${pct(g.r / g.f)}</td>
+        <td class="num">${tkr(g.os)}</td>
+        <td class="num">${g.iss ? `<span class="pill warn">${g.iss}</span>` : "–"}</td>
+        <td class="barcell"><div class="hbar" title="Försäljning ${tkr(g.f)} tkr"><i style="width:${g.f / max * 100}%"></i><i class="res" style="width:${g.r / max * 100}%"></i></div></td>
+      </tr>`).join("")}</tbody>
+    <tfoot><tr><td>Totalt</td><td class="num">${P.length}</td><td class="num">${tkr(tf)}</td><td class="num">${tkr(tr)}</td><td class="num">${pct(tr / tf)}</td><td class="num">${tkr(tos)}</td><td class="num">${P.filter(p=>p.flags.length).length}</td><td></td></tr></tfoot>`;
+  document.querySelectorAll("#people tr.row").forEach(tr => {
+    const go = () => { state.a = state.a === tr.dataset.a ? "" : tr.dataset.a; document.getElementById("fa").value = state.a; renderAll(); };
+    tr.addEventListener("click", go);
+    tr.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+}
+
+/* Tabell */
+const COLS = [
+  { key: "o", label: "Order" },
+  { key: "n", label: "Projekt / kund" },
+  { key: "a", label: "Ansv" },
+  { key: "s", label: "Status" },
+  { key: "pd", label: "Projektdatum" },
+  { key: "bs", label: "Byggstart" },
+  { key: "sb", label: "Slutbesiktning" },
+  { key: "f", label: "Försäljning", r: 1 },
+  { key: "ka", label: "Kalkyl", r: 1 },
+  { key: "r", label: "Resultat", r: 1 },
+  { key: "tg", label: "TG", r: 1 },
+  { key: "os", label: "Orderstock", r: 1 },
+  { key: "ki", label: "Kalkyl inlagd" },
+  { key: "flags", label: "Att åtgärda" },
+];
+function sortVal(p, k) {
+  if (k === "sb") return p.sbDate || (p.sbNote ? "9999" : "9998");
+  if (k === "bs") return p.bsDate || (p.bsText === "startat" ? "0000" : "9999");
+  if (k === "flags") return p.flags.length;
+  if (k === "ki") return p.ki ? 1 : 0;
+  const v = p[k];
+  return v == null ? -Infinity : v;
+}
+function sorted(rows) {
+  const { key, dir } = state.sort;
+  return [...rows].sort((x, y) => {
+    let a = sortVal(x, key), b = sortVal(y, key);
+    let c = typeof a === "string" && typeof b === "string" ? a.localeCompare(b, "sv") : (a > b) - (a < b);
+    if (c === 0) c = (x.pd || "").localeCompare(y.pd || "");
+    return c * dir;
+  });
+}
+function tgClass(tg) { return tg == null ? "" : tg < 0.05 ? "low" : tg < 0.11 ? "mid" : ""; }
+function rowHtml(p) {
+  const sb = p.sbNote ? `<span class="note">${esc(p.sbNote)}</span>` : p.sbYearOnly ? `${p.sb} <span class="pill warn">år</span>` : (p.sb || "–");
+  const bs = p.bsDate ? p.bsDate : p.bsText ? `<span class="pill ${p.bsText === "startat" ? "good" : "warn"}">${esc(p.bsText)}</span>` : "–";
+  const kv = p.kvar;
+  return `<tr>
+    <td><span class="ord"><i class="dot ${p.m || "none"}" title="${p.m ? "Färgmarkering: " + (p.m === "orange" ? "orange" : "grön") : "Ingen markering"}"></i>${esc(p.o)}</span></td>
+    <td><div class="name">${esc(p.n)}</div><div class="cust">${p.k ? esc(p.k) : '<span class="neg">Kund saknas</span>'}</div></td>
+    <td class="mono">${p.a}</td>
+    <td><span class="pill ${p.s === "B" ? "b" : "o"}">${p.s}</span></td>
+    <td class="date">${p.pd || "–"}</td>
+    <td class="date">${bs}</td>
+    <td class="date">${sb}</td>
+    <td class="r num">${tkr(p.f)}</td>
+    <td class="r num">${tkr(p.ka)}</td>
+    <td class="r num ${p.r < 0 ? "neg" : ""}">${tkr(p.r)}</td>
+    <td class="r num"><span class="tg ${tgClass(p.tg)}">${pct(p.tg)}</span></td>
+    <td class="r num"><div class="prog"><span class="${p.os < 0 ? "neg" : ""}">${tkr(p.os)}</span>${kv == null ? "" : `<span class="track ${kv < 0 ? "over" : ""}" title="${pct(kv)} av försäljningen kvar"><i style="width:${Math.min(100, Math.abs(kv) * 100)}%"></i></span>`}</div></td>
+    <td>${p.ki ? '<span class="check" title="Kalkyl inlagd">✓ Ja</span>' : '<span class="nocheck">Nej</span>'}</td>
+    <td><div class="flagcell">${p.flags.map(f => `<span class="pill ${f[1]}">${f[0]}</span>`).join("")}</div></td>
+  </tr>`;
+}
+function totalsCells(rows, cls) {
+  const f = sum(rows, "f"), r = sum(rows, "r");
+  return `<td class="r num">${tkr(f)}</td><td class="r num">${tkr(sum(rows, "ka"))}</td><td class="r num">${tkr(r)}</td><td class="r num">${pct(r / f)}</td><td class="r num">${tkr(sum(rows, "os"))}</td><td></td><td></td>`;
+}
+function renderTable(rows) {
+  const el = document.getElementById("tableView");
+  if (!rows.length) { el.innerHTML = `<div class="empty">Inga projekt matchar filtret. Rensa sökningen eller välj fler ansvariga.</div>`; return; }
+  const grouped = state.sort.key === "a";
+  let body = "";
+  if (grouped) {
+    const order = [...new Set(sorted(rows).map(p => p.a))];
+    for (const a of order) {
+      const g = sorted(rows.filter(p => p.a === a)).sort((x, y) => (x.pd || "").localeCompare(y.pd || ""));
+      body += `<tr class="group"><td colspan="7"><span class="g-name">${a}${NAMES[a] ? " · " + esc(NAMES[a]) : ""}</span> <span class="cust">· ${g.length} projekt</span></td>${totalsCells(g)}</tr>`;
+      body += g.map(rowHtml).join("");
+    }
+  } else body = sorted(rows).map(rowHtml).join("");
+  el.innerHTML = `<table class="proj">
+    <thead><tr>${COLS.map(c => `<th class="${c.r ? "r" : ""}" data-k="${c.key}" ${state.sort.key === c.key ? `aria-sort="${state.sort.dir > 0 ? "ascending" : "descending"}"` : ""} tabindex="0">${c.label}</th>`).join("")}</tr></thead>
+    <tbody>${body}</tbody>
+    <tfoot><tr><td colspan="7">Summa (${rows.length} projekt)</td>${totalsCells(rows)}</tr></tfoot>
+  </table>`;
+  el.querySelectorAll("th[data-k]").forEach(th => {
+    const go = () => {
+      const k = th.dataset.k;
+      state.sort = state.sort.key === k ? { key: k, dir: -state.sort.dir } : { key: k, dir: ["f", "ka", "r", "tg", "os", "flags"].includes(k) ? -1 : 1 };
+      renderTable(filtered());
+    };
+    th.addEventListener("click", go);
+    th.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  });
+}
+
+/* Tidslinje */
+const T0 = Date.parse("2017-07-01"), T1 = Date.parse("2027-01-01");
+const xp = d => ((Date.parse(d) - T0) / (T1 - T0) * 100);
+function renderGantt(rows) {
+  const el = document.getElementById("ganttScroll");
+  if (!rows.length) { el.innerHTML = `<div class="empty">Inga projekt matchar filtret.</div>`; return; }
+  const years = []; for (let y = 2018; y <= 2026; y++) years.push(y);
+  const bg = `<div class="g-bg">${years.map(y => `<i style="left:${xp(y + "-01-01")}%"></i>`).join("")}</div>`;
+  const now = `<div class="g-now" style="left:${xp(PLAN_DATE)}%"></div>`;
+  const order = [...new Set(rows.map(p => p.a))].sort((a, b) => a.localeCompare(b));
+  let html = `<div class="gantt"><div class="g-axis"><div class="lab">Projekt</div><div class="g-track">${years.map(y => `<span class="g-year" style="left:${xp(y + "-01-01")}%">${y}</span>`).join("")}<div class="g-now" style="left:${xp(PLAN_DATE)}%"><span>Läge jan 2021</span></div></div></div>`;
+  for (const a of order) {
+    const g = rows.filter(p => p.a === a).sort((x, y) => (x.sbDate || "9999").localeCompare(y.sbDate || "9999"));
+    html += `<div class="g-grp">${a}${NAMES[a] ? " · " + esc(NAMES[a]) : ""} <span class="cust" style="font-family:var(--body);font-weight:400;font-size:12.5px">· ${g.length} projekt</span></div>`;
+    for (const p of g) {
+      const start = p.pd || PLAN_DATE;
+      const open = !p.sbDate;
+      const end = p.sbDate || "2021-12-31";
+      const l = xp(start), w = Math.max(0.6, xp(end) - l);
+      const overdue = p.flags.some(f => f[2] === "sen");
+      let build = "";
+      if (p.bsDate) { const bl = Math.max(0, xp(p.bsDate) - l); build = `<span class="build" style="left:${Math.min(bl / w * 100, 100)}%"></span>`; }
+      else if (p.bsText === "startat") { const bl = Math.max(0, xp(PLAN_DATE) - l); build = `<span class="build" style="left:${Math.min(bl / w * 100, 98)}%"></span>`; }
+      const tip = `${p.o} ${p.n}\nProjektdatum: ${p.pd || "–"}\nByggstart: ${p.bsDate || p.bsText || "–"}\nSlutbesiktning: ${p.sbNote || p.sb || "saknas"}\nFörsäljning: ${tkr(p.f)} tkr`;
+      html += `<div class="g-row" title="${esc(tip)}"><div class="lab"><i class="dot ${p.m || "none"}"></i><span class="mono">${esc(p.o)}</span><span class="nm">${esc(p.n)}</span></div>
+        <div class="g-track">${bg}${now}<div class="bar ${overdue ? "overdue" : ""} ${open ? "open" : ""} ${p.sbYearOnly ? "yearonly" : ""}" style="left:${l}%;width:${w}%">${build}<span class="end"></span></div></div></div>`;
+    }
+  }
+  el.innerHTML = html + "</div>";
+}
+
+/* Att åtgärda */
+function renderIssues() {
+  const cats = [
+    { k: "sen", t: "Slutbesiktning redan passerad", c: "bad", d: "Datumet ligger före planens läge (2021-01-05). Uppdatera datum eller markera projektet som avslutat." },
+    { k: "eko", t: "Ekonomin ser fel ut", c: "bad", d: "Negativ orderstock, negativt resultat eller saknad försäljning." },
+    { k: "sb", t: "Slutbesiktning saknas eller är otydlig", c: "warn", d: "Fritext eller bara ett årtal i stället för ett datum." },
+    { k: "kund", t: "Kund saknas", c: "warn", d: "Projekt utan angiven beställare." },
+    { k: "datum", t: "Datum i fel ordning", c: "warn", d: "Beräknad byggstart ligger före projektdatum." },
+  ];
+  const html = cats.map(cat => {
+    const rows = P.filter(p => p.flags.some(f => f[2] === cat.k));
+    if (!rows.length) return "";
+    return `<div class="issue"><h3>${cat.t}<span class="n pill ${cat.c}">${rows.length}</span></h3><p>${cat.d}</p><ul>${rows.map(p => {
+      const why = p.flags.filter(f => f[2] === cat.k).map(f => f[0]).join(", ");
+      const extra = cat.k === "sen" ? ` <em>· ${p.sb}</em>` : cat.k === "sb" && (p.sbNote || p.sbYearOnly) ? ` <em>· ”${esc(p.sb)}”</em>` : cat.k === "eko" ? ` <em>· ${why}</em>` : "";
+      return `<li><span class="mono">${esc(p.o)}</span><span class="t">${esc(p.n)} <em>(${p.a})</em>${extra}</span></li>`;
+    }).join("")}</ul></div>`;
+  }).join("");
+  document.getElementById("issues").innerHTML = html;
+}
+
+function renderAll() {
+  const rows = filtered();
+  document.getElementById("count").textContent = `${rows.length} av ${P.length} projekt`;
+  document.querySelectorAll("#people tr.row").forEach(tr => tr.classList.toggle("on", tr.dataset.a === state.a));
+  document.getElementById("tableView").hidden = state.view !== "tabell";
+  document.getElementById("ganttView").hidden = state.view !== "tidslinje";
+  document.querySelectorAll("#view button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.view));
+  document.querySelectorAll("#fs button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.s));
+  if (state.view === "tabell") renderTable(rows); else renderGantt(rows);
+}
+
+// Init
+const fa = document.getElementById("fa");
+[...new Set(P.map(p => p.a))].sort().forEach(a => fa.insertAdjacentHTML("beforeend", `<option value="${a}">${a}${NAMES[a] ? " – " + esc(NAMES[a]) : ""}</option>`));
+fa.addEventListener("change", () => { state.a = fa.value; renderAll(); });
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; renderAll(); });
+document.getElementById("fi").addEventListener("change", e => { state.issues = e.target.checked; renderAll(); });
+document.querySelectorAll("#fs button").forEach(b => b.addEventListener("click", () => { state.s = b.dataset.v; renderAll(); }));
+document.querySelectorAll("#view button").forEach(b => b.addEventListener("click", () => {
+  state.view = b.dataset.v; try { localStorage.setItem("tp-view", state.view); } catch (e) {} renderAll();
+}));
+renderKpis(); renderPeople(); renderIssues(); renderAll();
+</script>
+
+</body>
+</html>
