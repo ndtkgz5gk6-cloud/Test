@@ -11,14 +11,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: planeringstavla – nyckeltal, en beläggningskarta per projektör och vecka, sedan projektplanen med veckorutor. */
+/* Layout: planeringstavla – nyckeltal, beläggningskarta i timmar per projektör och vecka, sedan en redigerbar veckoplan där varje ruta är timmar. */
 :root {
   --bg: #f3f5f7; --surface: #ffffff; --surface-2: #e9edf1; --line: #d3dae1;
   --fg: #16202a; --muted: #5b6875; --accent: #1f5f8b; --accent-soft: #dbe8f2;
-  --good: #23784a; --good-soft: #dcefe3; --warn: #a8640a; --warn-soft: #fbecd2; --bad: #b3342b; --bad-soft: #f8dedb;
-  /* färgkoder från originalfilen */
-  --c-g: #1f9a52; --c-l: #8fd14f; --c-r: #e0352b; --c-dr: #9e1c1c; --c-sem: #f3d54e;
-  --heat-0: #eef2f5; --heat-1: #d6e5f1; --heat-2: #a9c9e3; --heat-3: #6fa3cd; --heat-4: #2f73a8; --heat-5: #173f63;
+  --good: #23784a; --good-soft: #d6eedf; --warn: #a8640a; --warn-soft: #fbecd2; --bad: #b3342b; --bad-soft: #f8dedb;
+  --c-g: #1f9a52; --c-l: #8fd14f; --c-r: #e0352b; --c-dr: #9e1c1c;
+  --load-lo: #e3edf5; --load-mid: #b9d4ea;
   --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -27,18 +26,18 @@
   :root:not([data-theme="light"]) {
     --bg: #0f151b; --surface: #161e26; --surface-2: #1d2731; --line: #2b3742;
     --fg: #e4eaf0; --muted: #93a1ae; --accent: #6fb0de; --accent-soft: #1b3448;
-    --good: #5cc28a; --good-soft: #17352a; --warn: #e6a54a; --warn-soft: #3a2b14; --bad: #ef7d73; --bad-soft: #3c1d1b;
-    --c-g: #2fae63; --c-l: #8cc957; --c-r: #e5524a; --c-dr: #b8403a; --c-sem: #a88f22;
-    --heat-0: #1a232c; --heat-1: #1d3446; --heat-2: #24506f; --heat-3: #2f6f9c; --heat-4: #4b95c9; --heat-5: #8cc4ea;
+    --good: #5cc28a; --good-soft: #173a2a; --warn: #e6a54a; --warn-soft: #3a2b14; --bad: #ef7d73; --bad-soft: #45201d;
+    --c-g: #2fae63; --c-l: #8cc957; --c-r: #e5524a; --c-dr: #b8403a;
+    --load-lo: #1b2a37; --load-mid: #22425c;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f151b; --surface: #161e26; --surface-2: #1d2731; --line: #2b3742;
   --fg: #e4eaf0; --muted: #93a1ae; --accent: #6fb0de; --accent-soft: #1b3448;
-  --good: #5cc28a; --good-soft: #17352a; --warn: #e6a54a; --warn-soft: #3a2b14; --bad: #ef7d73; --bad-soft: #3c1d1b;
-  --c-g: #2fae63; --c-l: #8cc957; --c-r: #e5524a; --c-dr: #b8403a; --c-sem: #a88f22;
-  --heat-0: #1a232c; --heat-1: #1d3446; --heat-2: #24506f; --heat-3: #2f6f9c; --heat-4: #4b95c9; --heat-5: #8cc4ea;
+  --good: #5cc28a; --good-soft: #173a2a; --warn: #e6a54a; --warn-soft: #3a2b14; --bad: #ef7d73; --bad-soft: #45201d;
+  --c-g: #2fae63; --c-l: #8cc957; --c-r: #e5524a; --c-dr: #b8403a;
+  --load-lo: #1b2a37; --load-mid: #22425c;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -48,21 +47,35 @@ body {
   padding-block: 28px 56px;
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
-.wrap { max-width: 1360px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.wrap { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
 h1, h2, h3 { font-family: var(--display); font-stretch: 85%; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
 h1 { font-size: clamp(28px, 4.2vw, 44px); font-weight: 750; line-height: 1.05; }
 h2 { font-size: 20px; font-weight: 700; }
+h3 { font-size: 18px; font-weight: 700; }
 .eyebrow { font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .num { font-variant-numeric: tabular-nums; }
 .mono { font-family: var(--mono); }
-button { font: inherit; color: inherit; }
+button { font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 7px 12px; font-size: 13px; white-space: nowrap; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); font-weight: 500; }
+.btn.primary:hover { opacity: .9; }
+.btn.danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+.btn.danger.armed { background: var(--bad); color: var(--surface); }
+.btn.icon { padding: 6px 9px; }
+.btn:disabled { opacity: .5; cursor: default; }
 
 header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 32px; border-bottom: 2px solid var(--fg); padding-bottom: 16px; }
 header .meta { display: flex; flex-direction: column; gap: 6px; }
-header p { margin: 0; color: var(--muted); max-width: 64ch; }
-.stamp { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); padding: 6px 10px; background: var(--surface); color: var(--muted); }
-.stamp b { color: var(--fg); font-weight: 500; }
+header p { margin: 0; color: var(--muted); max-width: 66ch; }
+.stamp { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.chip { font-family: var(--mono); font-size: 12px; border: 1px solid var(--line); padding: 5px 10px; background: var(--surface); color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.chip b { color: var(--fg); font-weight: 500; }
+.sync .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync.ok .dot { background: var(--good); }
+.sync.busy .dot { background: var(--warn); }
+.sync.err .dot { background: var(--bad); }
 
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .kpi { background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -74,76 +87,93 @@ header p { margin: 0; color: var(--muted); max-width: 64ch; }
 
 section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
-.sec-head p { margin: 0; color: var(--muted); font-size: 13px; }
+.sec-head p { margin: 0; color: var(--muted); font-size: 13px; max-width: 80ch; }
 .panel { background: var(--surface); border: 1px solid var(--line); min-width: 0; }
 .scroll { overflow-x: auto; }
+.notice { padding: 12px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 13px; }
+.notice.err { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); color: var(--bad); background: var(--bad-soft); }
 
-/* Veckorutnät, gemensamt för karta och plan */
-.grid { --cw: 26px; --lw: 300px; display: grid; grid-template-columns: var(--lw) repeat(var(--n), var(--cw)); width: max-content; min-width: 100%; }
-.grid > div { min-height: 30px; border-bottom: 1px solid var(--line); }
-.grid .lab { position: sticky; left: 0; z-index: 1; background: var(--surface); padding: 5px 12px; display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; border-right: 1px solid var(--line); }
-.grid .hd { background: var(--surface-2); font-family: var(--mono); font-size: 10.5px; color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 24px; }
-.grid .hd.lab { background: var(--surface-2); justify-content: flex-start; text-transform: uppercase; letter-spacing: 0.06em; z-index: 2; }
-.grid .yr.has { position: relative; z-index: 1; background: transparent; }
-.grid .yr { justify-content: flex-start; padding-left: 4px; color: var(--fg); font-weight: 500; overflow: visible; white-space: nowrap; }
-.grid .wk { border-left: 1px solid transparent; }
-.grid .cell { position: relative; border-left: 1px solid color-mix(in srgb, var(--line) 50%, transparent); }
-.grid .cell.mstart, .grid .hd.mstart { border-left-color: var(--line); }
-.grid .cell.now, .grid .hd.now { box-shadow: inset 2px 0 0 var(--warn); }
+/* Veckorutnät */
+.grid { --cw: 46px; --lw: 300px; display: grid; grid-template-columns: var(--lw) repeat(var(--n), var(--cw)); width: max-content; min-width: 100%; }
+.grid > div { min-height: 32px; border-bottom: 1px solid var(--line); }
+.grid .lab { position: sticky; left: 0; z-index: 2; background: var(--surface); padding: 4px 10px 4px 12px; display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; border-right: 1px solid var(--line); }
+.grid .hd { background: var(--surface-2); font-family: var(--mono); font-size: 11px; color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 24px; }
+.grid .hd.lab { background: var(--surface-2); justify-content: flex-start; text-transform: uppercase; letter-spacing: 0.06em; z-index: 3; }
+.grid .yr { justify-content: flex-start; padding-left: 4px; color: var(--fg); font-weight: 500; white-space: nowrap; }
+.grid .yr.has { position: relative; z-index: 1; background: transparent; overflow: visible; }
+.grid .now { box-shadow: inset 2px 0 0 var(--warn); }
 .grid .hd.now { color: var(--warn); font-weight: 600; }
-.grid .cell.sem { background: color-mix(in srgb, var(--c-sem) 22%, transparent); }
+.grid .cell { position: relative; border-left: 1px solid color-mix(in srgb, var(--line) 55%, transparent); }
+
+/* Belastningsfärger */
+.ld { display: grid; place-items: center; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ld.z { color: transparent; }
+.ld.lo { background: var(--load-lo); }
+.ld.mid { background: var(--load-mid); }
+.ld.ok { background: var(--good-soft); color: var(--good); font-weight: 600; }
+.ld.over { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
 
 /* Beläggningskarta */
-.heat .lab { cursor: pointer; font-weight: 600; justify-content: space-between; }
-.heat .lab .cnt { font-family: var(--mono); font-size: 11.5px; color: var(--muted); font-weight: 400; }
-.heat .row-on .lab, .heat .lab.on { box-shadow: inset 3px 0 0 var(--accent); background: var(--accent-soft); }
-.heat .cell { display: grid; place-items: center; font-family: var(--mono); font-size: 11px; font-variant-numeric: tabular-nums; }
-.h0 { background: var(--heat-0); color: transparent; }
-.h1 { background: var(--heat-1); color: var(--fg); }
-.h2 { background: var(--heat-2); color: var(--fg); }
-.h3 { background: var(--heat-3); color: #fff; }
-.h4 { background: var(--heat-4); color: #fff; }
-.h5 { background: var(--heat-5); color: #fff; }
-:root[data-theme="dark"] .h4, :root[data-theme="dark"] .h5 { color: #0f151b; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .h4, :root:not([data-theme="light"]) .h5 { color: #0f151b; } }
-.heatlegend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 10px 12px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); }
-.heatlegend .scale { display: inline-flex; gap: 2px; align-items: center; }
-.heatlegend .scale i { width: 18px; height: 12px; display: inline-block; }
+.heat .lab { justify-content: space-between; }
+.heat .lab .who { display: flex; flex-direction: column; min-width: 0; cursor: pointer; }
+.heat .lab .who b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heat .lab .who span { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.heat .lab.on { box-shadow: inset 3px 0 0 var(--accent); background: var(--accent-soft); }
+.heat .tot .lab, .heat .tot.ld { font-weight: 600; background: var(--surface-2); }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 12.5px; color: var(--muted); padding: 10px 12px; border-top: 1px solid var(--line); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 18px; height: 12px; border-radius: 2px; border: 1px solid var(--line); }
+.sw.lo { background: var(--load-lo); } .sw.mid { background: var(--load-mid); } .sw.ok { background: var(--good-soft); } .sw.over { background: var(--bad-soft); }
+.sw.g { background: var(--c-g); } .sw.l { background: var(--c-l); } .sw.r { background: var(--c-r); } .sw.dr { background: var(--c-dr); }
+.sw.now { width: 3px; background: var(--warn); border: 0; border-radius: 0; }
+.legend kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); padding: 0 4px; background: var(--surface-2); }
 
 /* Toolbar */
-.toolbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 16px -12px rgba(0,0,0,.35); }
-.search { flex: 1 1 220px; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--bg); padding: 0 10px; }
-.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--fg); font: inherit; padding: 8px 0; outline: none; }
+.toolbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 16px -12px rgba(0,0,0,.35); }
+.search { flex: 1 1 200px; min-width: 0; display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--bg); padding: 0 10px; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--fg); font: inherit; padding: 7px 0; outline: none; }
 .search:focus-within { border-color: var(--accent); }
 .seg { display: inline-flex; border: 1px solid var(--line); }
-.seg button { border: 0; background: transparent; padding: 7px 11px; cursor: pointer; font-size: 13px; }
+.seg button { border: 0; background: transparent; padding: 7px 10px; font-size: 13px; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .seg button:hover:not([aria-pressed="true"]) { background: var(--surface-2); }
-select { font: inherit; font-size: 13px; padding: 7px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+select, .field input, .field textarea { font: inherit; font-size: 13px; padding: 7px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
 label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
-.count { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.weeknav { display: inline-flex; align-items: center; gap: 4px; }
+.weeknav .lbl { font-family: var(--mono); font-size: 12px; padding: 0 6px; white-space: nowrap; }
+.tb-spacer { flex: 1 0 0; }
 
-/* Projektplan */
-.plan .grp { grid-column: 1 / -1; position: sticky; left: 0; background: var(--surface-2); padding: 6px 12px; font-family: var(--display); font-stretch: 85%; font-weight: 700; font-size: 15px; display: flex; gap: 8px; align-items: baseline; min-height: 0; }
-.plan .grp span { font-family: var(--body); font-weight: 400; font-size: 12.5px; color: var(--muted); }
-.plan .lab { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; padding-block: 4px; }
-.plan .lab .t { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.plan .lab .sub { display: flex; gap: 6px; align-items: center; font-size: 11.5px; color: var(--muted); white-space: nowrap; max-width: 100%; overflow: hidden; }
-.plan .lab .sub .mono { font-size: 11px; }
-.plan .r-hover:hover, .plan .lab:hover { background: var(--accent-soft); }
-.blk { position: absolute; inset: 6px 0; }
-.blk.g { background: var(--c-g); } .blk.l { background: var(--c-l); } .blk.r { background: var(--c-r); } .blk.dr { background: var(--c-dr); }
-.blk.start { margin-left: 2px; border-radius: 3px 0 0 3px; } .blk.end { margin-right: 2px; border-radius: 0 3px 3px 0; } .blk.start.end { border-radius: 3px; }
-.ms { position: absolute; z-index: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 0 3px; background: var(--fg); color: var(--bg); border-radius: 2px; white-space: nowrap; line-height: 15px; }
-.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12.5px; color: var(--muted); padding: 10px 12px; border-top: 1px solid var(--line); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.sw { display: inline-block; width: 18px; height: 11px; border-radius: 2px; }
-.sw.g { background: var(--c-g); } .sw.l { background: var(--c-l); } .sw.r { background: var(--c-r); } .sw.dr { background: var(--c-dr); } .sw.sem { background: color-mix(in srgb, var(--c-sem) 45%, transparent); }
-.sw.now { width: 3px; background: var(--warn); border-radius: 0; }
-.empty { padding: 32px; text-align: center; color: var(--muted); }
+/* Veckoplan */
+.plan .grp { background: var(--surface-2); font-weight: 600; }
+.plan .grp.lab { background: var(--surface-2); flex-direction: row; justify-content: space-between; }
+.plan .grp.lab .gname { font-family: var(--display); font-stretch: 85%; font-weight: 700; font-size: 15px; }
+.plan .grp.lab .gsub { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--muted); }
+.plan .pl.lab { flex-direction: row; align-items: center; justify-content: space-between; }
+.plan .pl .txt { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.plan .pl .t { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plan .pl .sub { display: flex; gap: 6px; align-items: center; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; }
+.plan .pl .sub .mono { font-size: 11px; }
+.plan .pl.arch .t { text-decoration: line-through; color: var(--muted); }
+.plan .pl .edit { flex: none; border: 1px solid transparent; background: transparent; color: var(--muted); padding: 3px 6px; font-size: 12px; }
+.plan .pl:hover .edit, .plan .pl .edit:focus-visible { border-color: var(--line); color: var(--fg); background: var(--surface); }
+.hcell { padding: 0; }
+.hcell input { width: 100%; height: 100%; min-height: 31px; border: 0; background: transparent; color: var(--fg); font-family: var(--mono); font-size: 12px; text-align: center; padding: 0 2px; font-variant-numeric: tabular-nums; }
+.hcell input:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--surface); position: relative; z-index: 1; }
+.hcell input:disabled { color: var(--fg); -webkit-text-fill-color: var(--fg); opacity: 1; }
+.hcell.has { background: var(--accent-soft); }
+.hcell.has input { font-weight: 600; }
+.hcell.mk-g { background: color-mix(in srgb, var(--c-g) 22%, transparent); }
+.hcell.mk-l { background: color-mix(in srgb, var(--c-l) 28%, transparent); }
+.hcell.mk-r { background: color-mix(in srgb, var(--c-r) 20%, transparent); }
+.hcell.mk-dr { background: color-mix(in srgb, var(--c-dr) 24%, transparent); }
+.hcell.has.mk-g, .hcell.has.mk-l, .hcell.has.mk-r, .hcell.has.mk-dr { background: var(--accent-soft); }
+.hcell .mkbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none; }
+.mkbar.g { background: var(--c-g); } .mkbar.l { background: var(--c-l); } .mkbar.r { background: var(--c-r); } .mkbar.dr { background: var(--c-dr); }
+.hcell .ms { position: absolute; top: 1px; right: 1px; font-family: var(--mono); font-size: 9px; line-height: 12px; padding: 0 2px; background: var(--fg); color: var(--bg); border-radius: 2px; pointer-events: none; z-index: 2; }
+.hcell.saving input { color: var(--warn); }
+.empty { padding: 36px 20px; text-align: center; color: var(--muted); display: flex; flex-direction: column; gap: 10px; align-items: center; }
 
-/* Pills */
 .pill { display: inline-block; font-size: 11px; font-weight: 500; padding: 0 6px; border-radius: 3px; white-space: nowrap; line-height: 1.7; }
 .pill.good { background: var(--good-soft); color: var(--good); }
 .pill.warn { background: var(--warn-soft); color: var(--warn); }
@@ -152,37 +182,54 @@ label.chk { display: inline-flex; align-items: center; gap: 6px; font-size: 13px
 .pill.mute { background: var(--surface-2); color: var(--muted); }
 
 /* Tabell */
-table.proj { width: 100%; border-collapse: collapse; min-width: 1100px; }
+table.proj { width: 100%; border-collapse: collapse; min-width: 1150px; }
 .proj th, .proj td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 .proj thead th { background: var(--surface-2); font-family: var(--mono); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; cursor: pointer; user-select: none; }
-.proj thead th:hover { color: var(--fg); }
 .proj thead th[aria-sort="ascending"]::after { content: " ▲"; color: var(--accent); }
 .proj thead th[aria-sort="descending"]::after { content: " ▼"; color: var(--accent); }
 .proj td.r, .proj th.r { text-align: right; white-space: nowrap; }
+.proj tbody tr { cursor: pointer; }
 .proj tbody tr:hover td { background: var(--accent-soft); }
 .proj .name { font-weight: 600; }
 .proj .nr { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
 .proj tfoot td { font-weight: 600; border-top: 2px solid var(--fg); border-bottom: 0; }
 .neg { color: var(--bad); }
-.hrs { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-.track { width: 70px; height: 6px; background: var(--surface-2); position: relative; flex: none; }
-.track i { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
-.track.over i { background: var(--bad); }
-.flagcell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 220px; }
+.flagcell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 240px; }
 
 /* Att åtgärda */
 .issues { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .issue { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.issue h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.issue h3 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
 .issue p { margin: 0; color: var(--muted); font-size: 13px; }
-.issue ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.issue ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow: auto; }
 .issue li { display: flex; gap: 8px; font-size: 13px; min-width: 0; }
+.issue li button { border: 0; background: none; padding: 0; text-align: left; color: var(--fg); }
+.issue li button:hover { color: var(--accent); text-decoration: underline; }
 .issue li .mono { color: var(--muted); font-size: 12px; flex: none; width: 78px; }
 .issue li em { font-style: normal; color: var(--muted); }
 
+/* Dialog */
+.overlay { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--fg) 40%, transparent); display: flex; align-items: flex-start; justify-content: center; overflow-y: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 6vh) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 24px) max(16px, env(safe-area-inset-left, 0px)); }
+.dlg { background: var(--surface); border: 1px solid var(--line); width: min(620px, 100%); box-shadow: 0 24px 60px -20px rgba(0,0,0,.5); }
+.dlg form { display: flex; flex-direction: column; gap: 14px; padding: 20px; }
+.dlg .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 520px) { .dlg .row { grid-template-columns: minmax(0, 1fr); } }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 12px; font-weight: 500; color: var(--muted); }
+.field input, .field textarea, .field select { width: 100%; font-size: 14px; }
+.field textarea { min-height: 64px; resize: vertical; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); outline: none; }
+.dlg .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; }
+.dlg .acts div { display: flex; gap: 8px; flex-wrap: wrap; }
+.dlg .err { color: var(--bad); font-size: 13px; margin: 0; }
+.dlg .hint { color: var(--muted); font-size: 12.5px; margin: 0; }
+
+.toast { position: fixed; z-index: 60; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); background: var(--fg); color: var(--bg); padding: 9px 14px; font-size: 13px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.5); max-width: calc(100% - 32px); }
+
 footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 4px; }
 footer p { margin: 0; max-width: 95ch; }
-@media (max-width: 600px) { .grid { --lw: 190px; } }
+@media (max-width: 600px) { .grid { --lw: 180px; --cw: 42px; } }
 </style>
 
 <div class="wrap">
@@ -190,34 +237,39 @@ footer p { margin: 0; max-width: 95ch; }
     <div class="meta">
       <span class="eyebrow">Projektering · resursplan</span>
       <h1>Beläggning projektörer</h1>
-      <p>Vilka projekt varje projektör har, vilka veckor de är planerade och hur timbudgeten ser ut. Längst ned finns en lista över uppgifter som behöver kompletteras.</p>
+      <p>Skriv in timmar per projekt och vecka i veckoplanen. Kartan räknar ihop hur många timmar varje projektör är belagd och jämför med deras kapacitet.</p>
     </div>
-    <div class="stamp" id="stamp"></div>
+    <div class="stamp">
+      <span class="chip" id="nowChip"></span>
+      <span class="chip sync" id="sync"><i class="dot"></i><span>Ansluter…</span></span>
+    </div>
   </header>
+
+  <div id="notice" hidden></div>
 
   <div class="kpis" id="kpis"></div>
 
   <section>
     <div class="sec-head">
-      <h2>Beläggning per vecka</h2>
-      <p>Antal projekt med planerad tid per projektör och vecka. Klicka på ett namn för att filtrera projektplanen.</p>
+      <h2>Beläggning i timmar</h2>
+      <p>Summan av inlagda timmar per projektör och vecka. Klicka på ett namn för att filtrera veckoplanen, eller på kapaciteten för att ändra den.</p>
     </div>
     <div class="panel">
       <div class="scroll" id="heat"></div>
-      <div class="heatlegend">
-        <span>Projekt per vecka</span>
-        <span class="scale"><i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><i class="h5"></i></span>
-        <span>0 → 5+</span>
-        <span><i class="sw now"></i> Aktuell vecka</span>
-        <span><i class="sw sem"></i> Gulmarkerad vecka (semester, v. 28–31 2025)</span>
+      <div class="legend">
+        <span><i class="sw lo"></i>Under 50 %</span>
+        <span><i class="sw mid"></i>50–89 %</span>
+        <span><i class="sw ok"></i>90–100 %</span>
+        <span><i class="sw over"></i>Överbelagd</span>
+        <span><i class="sw now"></i>Aktuell vecka</span>
       </div>
     </div>
   </section>
 
   <section id="plan">
     <div class="sec-head">
-      <h2>Projektplan</h2>
-      <p>69 projekt, grupperade per projektör.</p>
+      <h2>Veckoplan</h2>
+      <p>Klicka i en ruta och skriv antal timmar. Skriv till exempel <span class="mono">16 BH</span> för att också markera en handling den veckan. Ändringar sparas direkt och syns för alla.</p>
     </div>
     <div class="toolbar">
       <label class="search" for="q">
@@ -225,28 +277,29 @@ footer p { margin: 0; max-width: 95ch; }
         <input id="q" type="search" placeholder="Sök projekt, nummer eller projektledare" autocomplete="off">
       </label>
       <select id="fp" aria-label="Projektör"><option value="">Alla projektörer</option></select>
-      <select id="fst" aria-label="Status"><option value="">Alla statusar</option></select>
-      <label class="chk"><input type="checkbox" id="fplan"> Endast med planerade veckor</label>
-      <label class="chk"><input type="checkbox" id="fi"> Endast att åtgärda</label>
-      <div class="seg" role="group" aria-label="Period" id="range">
-        <button type="button" data-v="kommande" aria-pressed="true">Kommande</button>
-        <button type="button" data-v="allt" aria-pressed="false">Hela perioden</button>
+      <div class="weeknav">
+        <button class="btn icon" type="button" id="prev" aria-label="Tidigare veckor">‹</button>
+        <button class="btn" type="button" id="today">Denna vecka</button>
+        <button class="btn icon" type="button" id="next" aria-label="Senare veckor">›</button>
+        <select id="span" aria-label="Antal veckor"><option value="8">8 veckor</option><option value="16" selected>16 veckor</option><option value="26">26 veckor</option><option value="52">52 veckor</option></select>
       </div>
+      <label class="chk"><input type="checkbox" id="fhide"> Dölj projekt utan timmar</label>
+      <label class="chk"><input type="checkbox" id="farch"> Visa arkiverade</label>
       <div class="seg" role="group" aria-label="Vy" id="view">
         <button type="button" data-v="plan" aria-pressed="true">Veckoplan</button>
         <button type="button" data-v="tabell" aria-pressed="false">Tabell</button>
       </div>
-      <span class="count" id="count"></span>
+      <span class="tb-spacer"></span>
+      <button class="btn" type="button" id="addPerson" hidden>+ Projektör</button>
+      <button class="btn primary" type="button" id="addProject" hidden>+ Nytt projekt</button>
     </div>
     <div class="panel" id="planView">
       <div class="scroll" id="planGrid"></div>
       <div class="legend">
-        <span><i class="sw g"></i>Grön</span>
-        <span><i class="sw l"></i>Ljusgrön</span>
-        <span><i class="sw r"></i>Röd</span>
-        <span><i class="sw dr"></i>Mörkröd</span>
-        <span><span class="ms" style="position:static;transform:none">BH</span> Handling i veckan (SH, GH, BH, RH)</span>
-        <span><i class="sw now"></i> Aktuell vecka</span>
+        <span><i class="sw" style="background:var(--accent-soft)"></i>Inlagda timmar</span>
+        <span><i class="sw g"></i><i class="sw l"></i><i class="sw r"></i><i class="sw dr"></i>Färgmarkering från gamla Excel-listan</span>
+        <span><span class="pill mute mono">BH</span>Handling i veckan</span>
+        <span><kbd>Enter</kbd> / <kbd>↓</kbd> nästa projekt · <kbd>Tab</kbd> nästa vecka</span>
       </div>
     </div>
     <div class="panel scroll" id="tableView" hidden></div>
@@ -254,339 +307,480 @@ footer p { margin: 0; max-width: 95ch; }
 
   <section>
     <div class="sec-head">
-      <h2>Att åtgärda i listan</h2>
-      <p>Uppgifter som saknas, är otydliga eller ser fel ut i originalfilen.</p>
+      <h2>Att åtgärda</h2>
+      <p>Räknas fram ur det som ligger i planen just nu. Klicka på ett projekt för att öppna det.</p>
     </div>
     <div class="issues" id="issues"></div>
   </section>
 
   <footer>
-    <p>Källa: Belaggning_projektorer_ny.xlsx, flik ”Beläggning projektörer” (69 projekt). Veckorna räknas från startdatumet 2024-01-01 i fliken ”parametrar”.</p>
-    <p>Färgerna i veckoplanen är samma som i originalfilen. Filen förklarar inte vad de betyder, så de visas med färgnamn. Kolumnen Byggstart är tom för alla projekt och visas därför inte.</p>
+    <p>Projekten och de färgmarkerade veckorna kommer från Belaggning_projektorer_ny.xlsx. Timmar per vecka fanns inte i den listan, så de är tomma tills någon lägger in dem.</p>
+    <p>Kapaciteten är satt till 40 timmar per vecka för alla. Ändra den genom att klicka på siffran under namnet i kartan.</p>
   </footer>
 </div>
 
-<script>
-const DATA = [
-{"n": "Amphitrite Malmö", "nr": "P25025", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": 2300, "u": 2200, "j": 100, "w": [[84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l"], [96, "l"], [97, "l"], [98, "l"], [99, "l"], [100, "l"], [101, "l"], [102, "l"], [103, "l"], [104, "l"]]},
-{"n": "Dryaden Stora Råby Lund FAS 1", "nr": "P25013", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": [[61, "g"], [62, "g"], [63, "g"], [64, "g"], [65, "g"], [66, "g"], [67, "g"], [68, "g"], [69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [75, "g"], [76, "g"], [77, "g"], [78, "g"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"]]},
-{"n": "Skjutskontoret 2", "nr": "P26024", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": [[61, "g"], [62, "g"], [63, "g"], [64, "g"], [65, "g"], [66, "g"], [67, "g"], [68, "g"], [69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"]]},
-{"n": "Beluvue IKANO", "nr": "P26028", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": [[61, "g"], [62, "g"], [63, "g"], [64, "g"], [65, "g"], [66, "g"], [67, "g"], [68, "g"], [69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"]]},
-{"n": "Loop Garden", "nr": "P26029", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "Multihuset", "nr": "P26015", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "BRF Elineläge", "nr": "P26019", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "Recon Hallbygg", "nr": "P26036", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "MKB Brännaren", "nr": "P26032", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "Virket 3", "nr": "P25002", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": [[61, "g"], [62, "g"], [63, "g"], [64, "g"], [65, "g"], [66, "g"], [67, "g"], [68, "g"], [69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [75, "g"], [76, "g"], [77, "g"], [78, "g"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l"], [96, "l"], [97, "l"], [98, "l"], [99, "l"], [100, "l"], [101, "l"], [102, "l"], [103, "l"], [104, "l"], [105, "l"], [106, "l"], [107, "l"]]},
-{"n": "HGA13 Vestas Vista", "nr": "P26040", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": [[69, "r", "RH"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"]]},
-{"n": "BWT Pharma", "nr": "P26027", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "Burlöv C, Riksbyggen", "nr": "P26031", "p": "Anton Hörstedt", "hp": null, "pl": null, "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []},
-{"n": "Snöfoget 1 & Snödrivan 1 Lund", "nr": "P23013", "p": "Ben Berisha", "hp": "Bensard Berisha", "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Limhamn Sjön", "nr": "P25049", "p": "Ben Berisha", "hp": null, "pl": "Peder", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[150, "r"], [151, "r"]]},
-{"n": "Kuben Bara om och tillbyggnad", "nr": "P26002", "p": "Ben Berisha", "hp": null, "pl": "Dorch", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": 2, "w": [[152, "r"]]},
-{"n": "Humlemaden Burlövs Bostäder", "nr": "SP260008", "p": "Ben Berisha", "hp": null, "pl": "Ullner", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Trikhem Spritfabrik", "nr": "SP260012", "p": "Ben Berisha", "hp": null, "pl": "Sten", "bs": null, "st": null, "h": null, "u": null, "j": 8, "w": [[147, "r"], [148, "r"], [149, "r"], [152, "r"]]},
-{"n": "Thage, Svenska kyrkanvent museum", "nr": "SP260018", "p": "Ben Berisha", "hp": null, "pl": "Ullner", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Räddningstjänsten Svedala", "nr": "P25054", "p": "Ben Berisha", "hp": null, "pl": "Dorch", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Levla", "nr": "P26003", "p": "Ben Berisha", "hp": null, "pl": "Peder", "bs": null, "st": "GH V45, BH 49", "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"], [149, "r"], [150, "r"], [151, "r"], [152, "r"]]},
-{"n": "Smörkärnan 1 Västerbro 2&3", "nr": "P26023", "p": "Ben Berisha", "hp": null, "pl": "Mange", "bs": null, "st": "GH V46, BH 49", "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"], [149, "r"], [151, "r"], [152, "r"]]},
-{"n": "Villa Boris", "nr": "SP260034", "p": "Ben Berisha", "hp": null, "pl": "Dorch", "bs": null, "st": "Pågor", "h": null, "u": null, "j": null, "w": [[151, "r"]]},
-{"n": "Svansjö Hus C", "nr": "SP260035", "p": "Ben Berisha", "hp": null, "pl": "Dorch", "bs": null, "st": "BH V49", "h": null, "u": null, "j": null, "w": [[152, "r"]]},
-{"n": "Banvakten", "nr": "P26005", "p": "Gustav Schyllert", "hp": "Bensard Berisha", "pl": "Mange", "bs": null, "st": "BH KLAR", "h": 166, "u": 160, "j": 6, "w": []},
-{"n": "Meterologen Lund", "nr": "P24056", "p": "Gustav Schyllert", "hp": "Bensard Berisha", "pl": "Mange", "bs": null, "st": "BH KLAR", "h": 250, "u": 452, "j": -202, "w": [[84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l", "GH"], [96, "l"], [97, "l"], [98, "l"], [99, "l", "BH"]]},
-{"n": "Smörkärnan 6 - västerbro 1", "nr": "P25033", "p": "Gustav Schyllert", "hp": "Bensard Berisha", "pl": "Mange", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": 0, "w": [[69, "r", "RH"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l", "GH"], [96, "l"], [97, "l"], [98, "l"]]},
-{"n": "Scandic St Jörgen ROT Plan 2-10", "nr": "SP260041", "p": "Gustav Schyllert", "hp": "Hakam", "pl": "Dorch", "bs": null, "st": null, "h": 250, "u": 187, "j": 63, "w": [[144, "dr"], [145, "dr"], [146, "dr"], [147, "dr"], [148, "dr"], [149, "dr"], [150, "dr"], [151, "r"], [152, "r"], [153, "r"], [154, "r"], [155, "r"]]},
-{"n": "Östratornskolan", "nr": "P26033", "p": "Gustav Schyllert", "hp": "Hakam", "pl": "Mange", "bs": null, "st": "Pågår", "h": 40, "u": null, "j": 40, "w": [[144, "dr"], [145, "dr"], [146, "dr"], [148, "dr"], [151, "r"], [152, "r"], [153, "r"], [154, "r"]]},
-{"n": "Bona Terra", "nr": "P25027", "p": "Gustav Schyllert", "hp": null, "pl": "Mange", "bs": null, "st": "RH", "h": null, "u": null, "j": 0, "w": [[83, "l"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [95, "lg"], [96, "lg"], [97, "lg"], [98, "lg"]]},
-{"n": "Bussdepå Sturkögatan", "nr": "P24075", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": 250, "u": 169, "j": 81, "w": [[61, "g9"], [62, "g9"], [63, "g9"], [64, "g9"], [65, "g9"], [69, "g"], [70, "g"], [71, "g"], [72, "g"]]},
-{"n": "Ingelstad kök", "nr": "P25042", "p": "Gustav Schyllert", "hp": null, "pl": "Dorch", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": 0, "w": [[64, "r", "RH"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"]]},
-{"n": "Lunden St Lars väg 36 Lund", "nr": "P25001", "p": "Gustav Schyllert", "hp": null, "pl": "Mange", "bs": null, "st": "BH KLAR", "h": 250, "u": 388, "j": -138, "w": [[61, "g9"], [62, "g9"], [63, "g9"], [64, "g9"], [65, "g9"], [66, "g9"], [69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"]]},
-{"n": "Sankt Gertrud Malmö om- och tillbyggnad hotell", "nr": "P24055", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": 666, "u": 360, "j": 306, "w": [[61, "g9"], [62, "g9"], [63, "g9"], [64, "g9"], [65, "g9"], [66, "g9"], [67, "g9"], [68, "g9"], [69, "g9"], [70, "g9"], [71, "g9"], [72, "g9"], [73, "g9"], [74, "g9"], [75, "g9"], [76, "g9"], [77, "g9"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [144, "dr"], [145, "dr"], [146, "dr"], [147, "dr"], [148, "dr"]]},
-{"n": "Solblomman Fas 1", "nr": "P24072", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": 0, "w": []},
-{"n": "Vikingaskolan Lund", "nr": "P24002", "p": "Gustav Schyllert", "hp": null, "pl": "Mange", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Ängahusen Campus Vellinge", "nr": "P25011", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[61, "g9"], [62, "g9"], [63, "g9"], [64, "g9"], [65, "g9"], [66, "g9"], [67, "g9"], [68, "g9"], [69, "g9"], [70, "g9"], [71, "g9"], [72, "g9"], [73, "g9"], [74, "g9"], [75, "g9"], [76, "g9"], [77, "g9"], [78, "g9"]]},
-{"n": "Äppellunden Vellinge", "nr": "P24022", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Örtofta nya kraftvärmeverk", "nr": "P25031", "p": "Gustav Schyllert", "hp": null, "pl": "Peder", "bs": null, "st": "Pågår", "h": 920, "u": 780, "j": 140, "w": [[83, "l"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l"], [96, "l"], [97, "l"], [98, "l"], [99, "l"], [100, "l"], [101, "l"], [102, "l"], [103, "l"], [104, "l"], [105, "l"], [106, "l"], [107, "l"], [108, "l"]]},
-{"n": "Smörkärnan 1 Lund Västerbro Mobilitetshus", "nr": "P25053", "p": "Gustav Schyllert", "hp": null, "pl": "Mange", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Mec 2/ Varvshallarna systemhandling", "nr": "P25056", "p": "Gustav Schyllert", "hp": null, "pl": "TBD", "bs": null, "st": "GH", "h": null, "u": null, "j": null, "w": [[144, "dr"], [145, "dr"], [146, "dr"], [147, "dr"], [148, "dr"], [149, "dr"], [150, "dr"], [151, "dr"], [152, "dr"], [153, "dr"], [154, "dr"], [155, "dr"]]},
-{"n": "Kv 14 Västra Hamnen", "nr": "P26007", "p": "Gustav Schyllert", "hp": null, "pl": "TBD", "bs": null, "st": "SH Klar", "h": null, "u": null, "j": null, "w": []},
-{"n": "Lantmännen Svalöv", "nr": "P26010", "p": "Gustav Schyllert", "hp": null, "pl": "Peder", "bs": null, "st": "Pågår", "h": null, "u": null, "j": null, "w": []},
-{"n": "Brf Krita Skivsnäckan Fas 2", "nr": "P25018", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [75, "g"], [76, "g"], [77, "g"], [78, "g"], [83, "l"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l", "BH"]]},
-{"n": "Dirigenten 4 Lund Homely", "nr": "P25024", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [75, "g"], [76, "g"], [77, "g"], [78, "g"], [83, "l"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l", "BH"]]},
-{"n": "Lager Sunnanå 8:51", "nr": "P25029", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "RH KLAR", "h": null, "u": null, "j": null, "w": [[84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l", "GH"], [92, "l"], [93, "l"], [94, "l", "BH"]]},
-{"n": "Hamnens Energitank (HET) Malmö EON", "nr": "P26018", "p": "Gustav Schyllert", "hp": null, "pl": "TBD", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"], [151, "dr"]]},
-{"n": "Vårdbiträdet SUS Lund", "nr": "SP260029", "p": "Gustav Schyllert", "hp": null, "pl": "Dorch", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Nya Stationsvägen", "nr": "P26025", "p": "Gustav Schyllert", "hp": null, "pl": "Henke", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Kungen 1 Malmö", "nr": "SP260031", "p": "Gustav Schyllert", "hp": null, "pl": "Dorch", "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": []},
-{"n": "Varvstornen", "nr": "P26030", "p": "Gustav Schyllert", "hp": null, "pl": "TBD", "bs": null, "st": "Pågår", "h": 250, "u": null, "j": null, "w": [[144, "dr"], [145, "dr"], [146, "dr"], [147, "dr"], [148, "dr"], [149, "dr"], [150, "dr"], [151, "dr"], [152, "dr"], [153, "dr"], [154, "dr"], [155, "dr"], [156, "dr"], [157, "dr"], [158, "dr"], [159, "dr"]]},
-{"n": "Lomma Sp och Hotell - Fas 1", "nr": "P26034", "p": "Gustav Schyllert", "hp": null, "pl": "TBD", "bs": null, "st": "pågår", "h": null, "u": null, "j": null, "w": [[144, "dr"], [145, "dr"], [146, "dr"], [147, "dr"], [148, "dr"], [149, "dr"], [150, "dr"], [151, "dr"], [152, "dr"], [153, "dr"], [154, "r"], [155, "r"], [156, "r"], [157, "r"], [158, "r"], [159, "r"], [160, "r"], [161, "r"], [162, "r"], [163, "r"]]},
-{"n": "Tigern 10", "nr": "SP260030", "p": "Gustav Schyllert", "hp": null, "pl": "Dorch", "bs": null, "st": "pågår", "h": null, "u": null, "j": null, "w": [[69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [147, "r"], [148, "r"], [149, "r"], [150, "r"], [151, "r"], [152, "r"], [153, "r"], [154, "r"], [155, "r"]]},
-{"n": "Garvaren 24 Simrishamn", "nr": "P26037", "p": "Gustav Schyllert", "hp": "Hakam", "pl": null, "bs": null, "st": null, "h": 80, "u": null, "j": null, "w": []},
-{"n": "Svalan", "nr": "SP260037", "p": "Gustav Schyllert", "hp": null, "pl": "Ullner", "bs": null, "st": null, "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"]]},
-{"n": "Stora kvarteret PEAB", "nr": "P26022", "p": "Gustav Schyllert", "hp": "Hakam", "pl": "peder", "bs": null, "st": "SH KLAR", "h": 85, "u": 121, "j": -36, "w": [[147, "r"], [148, "r"], [149, "r"]]},
-{"n": "Staffanstorp Idrottshall Bowling", "nr": "SP260043", "p": "Hakam", "hp": null, "pl": "Dorch", "bs": null, "st": "Pågår", "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"], [149, "r"]]},
-{"n": "More Hotell", "nr": "P26011", "p": "Hakam Ahmed", "hp": null, "pl": "peder", "bs": null, "st": "BH men arbete pågår", "h": null, "u": null, "j": null, "w": []},
-{"n": "Guldstekeln LK-vision", "nr": "OS000034", "p": "Hakam Ahmed", "hp": null, "pl": "dorch", "bs": null, "st": "BH klar", "h": null, "u": null, "j": null, "w": []},
-{"n": "Vikem område C", "nr": "P25017", "p": "Jens Davidsson", "hp": "Kolla med henrik", "pl": null, "bs": null, "st": "Etapp 1 RH", "h": null, "u": null, "j": null, "w": [[61, "g9"], [62, "g9"], [63, "g9"], [64, "g9"], [65, "g9"], [66, "g9"], [67, "g9"]]},
-{"n": "Badhus Skurup", "nr": "P26006", "p": "Niklas Lundqvist", "hp": "Hakam", "pl": null, "bs": null, "st": "BH KLAR men arbete pågår", "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"], [149, "r"], [150, "r"]]},
-{"n": "Mårtens Backe LFK Solhällan 2", "nr": "P26039", "p": "Niklas Lundqvist", "hp": "Hakam", "pl": "Mange", "bs": null, "st": null, "h": 300, "u": null, "j": null, "w": [[151, "r"], [152, "r"], [153, "r"], [154, "r"], [155, "r"], [156, "r"], [157, "r"], [158, "r"], [159, "r"], [160, "r"], [161, "r"], [162, "r"], [163, "r"], [164, "r"], [165, "r"], [166, "r"], [167, "r"], [168, "r"], [169, "r"], [170, "r"], [171, "r"], [172, "r"], [173, "r"], [174, "r"], [175, "r"], [176, "r"], [177, "r"], [178, "r"]]},
-{"n": "Varvstaden Malmö By 259", "nr": "P24023", "p": "Niklas Lundqvist", "hp": null, "pl": "Mange", "bs": null, "st": "BH KLAR, men arbete pågår", "h": null, "u": null, "j": null, "w": [[84, "l"]]},
-{"n": "Hexagonen 1 Lund Fas 1", "nr": "P25022", "p": "Niklas Lundqvist", "hp": null, "pl": null, "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [75, "g"], [76, "g"], [77, "g"], [78, "g"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l", "BH-A"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l"], [96, "l"], [97, "l"], [98, "l"], [99, "l"], [100, "l", "BH-B"]]},
-{"n": "SÄBO Bjuv Fas 2", "nr": "P25010", "p": "Niklas Lundqvist", "hp": null, "pl": null, "bs": null, "st": "BH KLAR", "h": null, "u": null, "j": null, "w": [[84, "l"], [85, "l"]]},
-{"n": "Virket 8 Södervärn", "nr": "P25043", "p": "Niklas Lundqvist", "hp": null, "pl": "Peder", "bs": null, "st": "Proj", "h": null, "u": null, "j": null, "w": [[61, "g"], [62, "g"], [63, "g"], [64, "g"], [65, "g"], [66, "g"], [67, "g"], [68, "g"], [69, "g"], [70, "g"], [71, "g"], [72, "g"], [73, "g"], [74, "g"], [75, "g"], [76, "g"], [77, "g"], [78, "g"], [84, "l"], [85, "l"], [86, "l"], [87, "l"], [88, "l"], [89, "l"], [90, "l"], [91, "l"], [92, "l"], [93, "l"], [94, "l"], [95, "l"], [96, "l"], [97, "l"], [98, "l"], [99, "l"], [100, "l"], [101, "l"], [102, "l"], [103, "l"], [147, "r"], [148, "r"], [149, "r"], [150, "r"], [151, "r"], [152, "r"], [153, "r"], [154, "r"], [155, "r"], [156, "r"], [157, "r"], [158, "r"]]},
-{"n": "JS Smide Skurup, Montage Ventilation", "nr": "SP260033", "p": "Niklas Lundqvist", "hp": null, "pl": null, "bs": null, "st": "pågår", "h": null, "u": null, "j": null, "w": [[147, "r"], [148, "r"], [149, "r"], [150, "r"]]},
-{"n": "Kv K-Kronan FAS 1 Systemhandling", "nr": "P26041", "p": "Niklas Lundqvist", "hp": null, "pl": null, "bs": null, "st": "Proj", "h": 625, "u": null, "j": null, "w": [[152, "r"], [153, "r"], [154, "r"], [155, "r"], [156, "r"], [157, "r"], [158, "r"], [159, "r"], [160, "r"], [161, "r"], [162, "r"], [163, "r"], [164, "r"], [165, "r"], [166, "r"], [167, "r"]]},
-{"n": "Balder Garden hotell", "nr": null, "p": "Hakam Ahmed", "hp": null, "pl": "Ullner", "bs": null, "st": null, "h": null, "u": null, "j": null, "w": []}
-];
-const START = Date.UTC(2024, 0, 1);       // måndag v. 1 2024 (parametrar!C2)
-const DAY = 86400000;
-const SEM = [79, 80, 81, 82];              // gulmarkerade veckor i originalet (v. 28–31 2025)
-const COLOR = { g: "g", g9: "g", l: "l", lg: "l", r: "r", dr: "dr" };
+<div id="dlgRoot"></div>
+<div class="toast" id="toast" hidden></div>
 
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const fmt = v => v == null ? "–" : v.toLocaleString("sv-SE");
-const cap = s => s && s[0].toUpperCase() + s.slice(1);
-function isoWeek(i) {
-  const d = new Date(START + i * 7 * DAY + 3 * DAY); // torsdag avgör ISO-år
-  const y = d.getUTCFullYear(), jan4 = new Date(Date.UTC(y, 0, 4));
+<script>
+/* ---------- Veckor ---------- */
+const DAY = 86400000, START = Date.UTC(2024, 0, 1);
+function isoOf(i) {
+  const d = new Date(START + i * 7 * DAY + 3 * DAY), y = d.getUTCFullYear(), jan4 = new Date(Date.UTC(y, 0, 4));
   const w = 1 + Math.round(((d - jan4) / DAY - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
-  return { y, w, m: d.getUTCMonth() };
+  return { y, w };
 }
-const wkLabel = i => { const k = isoWeek(i); return `v. ${k.w} ${k.y}`; };
+const keyOf = i => { const k = isoOf(i); return `${k.y}-W${String(k.w).padStart(2, "0")}`; };
+const labelOf = i => { const k = isoOf(i); return `v. ${k.w} ${k.y}`; };
+function idxOf(key) {
+  const m = /^(\d{4})-W(\d{2})$/.exec(key); if (!m) return null;
+  const jan4 = Date.UTC(+m[1], 0, 4), dow = (new Date(jan4).getUTCDay() + 6) % 7;
+  return Math.round((jan4 - dow * DAY + (+m[2] - 1) * 7 * DAY - START) / (7 * DAY));
+}
 const NOW = Math.floor((Date.now() - START) / (7 * DAY));
 
-/* Normalisering */
-const PERSON = { "Hakam": "Hakam Ahmed" };
-function statusGroup(s) {
-  if (!s) return ["Status saknas", "mute"];
-  const t = s.toLowerCase();
-  if (/^bh.*(pågår)/.test(t) || /bh men arbete/.test(t)) return ["BH klar, arbete pågår", "info"];
-  if (/^bh klar$/.test(t)) return ["BH klar", "good"];
-  if (/^(sh|rh) klar$/.test(t)) return [s.slice(0, 2).toUpperCase() + " klar", "good"];
-  if (/v\s?\d+|bh \d+/.test(t)) return ["Planerad handling", "warn"];
-  if (/pågår|pågor|proj/.test(t)) return ["Pågår", "info"];
-  return ["Övrigt", "mute"];
+/* ---------- Hjälp ---------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = v => v == null || v === "" ? "–" : (+v).toLocaleString("sv-SE", { maximumFractionDigits: 1 });
+const $ = id => document.getElementById(id);
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600); }
+function statusClass(s) {
+  const t = (s || "").toLowerCase();
+  if (!t) return "mute";
+  if (/klar/.test(t) && !/pågår|men/.test(t)) return "good";
+  if (/v\s?\d+|bh \d+/.test(t)) return "warn";
+  if (/pågår|proj|men/.test(t)) return "info";
+  return "mute";
 }
-const P = DATA.map((d, idx) => {
-  const p = { ...d, idx };
-  p.pers = PERSON[d.p] || d.p;
-  p.plN = d.pl ? cap(d.pl) : null;
-  [p.sg, p.sc] = statusGroup(d.st);
-  p.weeks = d.w.map(([i, c, t]) => ({ i, c: COLOR[c] || "g", t }));
-  p.wset = new Map(p.weeks.map(w => [w.i, w]));
-  p.next = p.weeks.find(w => w.i >= NOW)?.i ?? null;
-  p.last = p.weeks.length ? p.weeks[p.weeks.length - 1].i : null;
-  p.flags = [];
-  if (d.j != null && d.j < 0) p.flags.push(["Över budget", "bad", "budget"]);
-  if (d.j && d.h == null) p.flags.push(["Återstår utan budget", "warn", "budget"]);
-  if (!d.nr) p.flags.push(["Projektnummer saknas", "bad", "nr"]);
-  if (PERSON[d.p]) p.flags.push(["Projektör stavas olika", "warn", "namn"]);
-  if (d.pl && d.pl !== cap(d.pl)) p.flags.push(["Projektledare stavas olika", "warn", "namn"]);
-  if (!d.pl) p.flags.push(["Projektledare saknas", "warn", "pl"]);
-  else if (/^tbd$/i.test(d.pl)) p.flags.push(["Projektledare TBD", "warn", "pl"]);
-  if (d.hp && /kolla/i.test(d.hp)) p.flags.push(["Hjälpprojektör oklar", "warn", "pl"]);
-  if (d.st && /pågor/i.test(d.st)) p.flags.push(["Stavfel i status", "warn", "namn"]);
-  if (!d.st) p.flags.push(["Status saknas", "warn", "status"]);
-  return p;
-});
-const PEOPLE = [...new Set(P.map(p => p.pers))];
-const MINW = Math.min(...P.flatMap(p => p.weeks.map(w => w.i)));
-const MAXW = Math.max(...P.flatMap(p => p.weeks.map(w => w.i)));
-
-const state = { q: "", p: "", st: "", plan: false, issues: false, range: "kommande", view: "plan", sort: { key: "pers", dir: 1 } };
-try { const s = JSON.parse(localStorage.getItem("bel-ui") || "{}"); if (s.range) state.range = s.range; if (s.view) state.view = s.view; } catch (e) {}
-const save = () => { try { localStorage.setItem("bel-ui", JSON.stringify({ range: state.range, view: state.view })); } catch (e) {} };
-
-function weekRange() {
-  if (state.range === "allt" || NOW > MAXW) return [MINW, MAXW];
-  return [Math.max(MINW, NOW - 4), Math.max(MAXW, NOW + 8)];
-}
-function filtered() {
-  const q = state.q.trim().toLowerCase();
-  return P.filter(p =>
-    (!state.p || p.pers === state.p) &&
-    (!state.st || p.sg === state.st) &&
-    (!state.plan || p.weeks.length) &&
-    (!state.issues || p.flags.length) &&
-    (!q || [p.n, p.nr, p.plN, p.hp, p.pers].some(x => x && x.toLowerCase().includes(q)))
-  );
+function loadClass(h, cap) {
+  if (!h) return "z";
+  const p = cap ? h / cap : 1;
+  return p > 1.0001 ? "over" : p >= 0.9 ? "ok" : p >= 0.5 ? "mid" : "lo";
 }
 
-/* Header och nyckeltal */
-function renderTop() {
-  document.getElementById("stamp").innerHTML = `Aktuell vecka: <b>${NOW >= 0 ? wkLabel(NOW) : "–"}</b> · planen sträcker sig till <b>${wkLabel(MAXW)}</b>`;
-  const nowProj = P.filter(p => p.wset.has(NOW));
-  const coming = P.filter(p => p.weeks.some(w => w.i >= NOW && w.i < NOW + 8));
-  const h = P.reduce((s, p) => s + (p.h || 0), 0), u = P.reduce((s, p) => s + (p.u || 0), 0);
-  const over = P.filter(p => p.j < 0);
-  document.getElementById("kpis").innerHTML = `
-    <div class="kpi"><span class="eyebrow">Projekt</span><span class="v num">${P.length}</span><span class="s">fördelade på ${PEOPLE.length} projektörer</span></div>
-    <div class="kpi"><span class="eyebrow">Planerade denna vecka</span><span class="v num">${nowProj.length}<small>projekt</small></span><span class="s">${coming.length} projekt har planerad tid de kommande 8 veckorna</span></div>
-    <div class="kpi"><span class="eyebrow">Timbudget</span><span class="v num">${fmt(u)}<small>/ ${fmt(h)} h</small></span><span class="s">upparbetat av budget, ${P.filter(p => p.h).length} projekt har budget angiven</span></div>
-    <div class="kpi alert"><span class="eyebrow">Över budget</span><span class="v num">${over.length}<small>projekt</small></span><span class="s">${fmt(-over.reduce((s, p) => s + p.j, 0))} timmar över totalt</span></div>`;
+/* ---------- Tillstånd ---------- */
+const S = {
+  db: null, canWrite: false, loaded: { projects: false, people: false },
+  projects: [], people: [],
+  q: "", pid: "", hide: false, arch: false, view: "plan",
+  ws: NOW - 2, span: 16, sort: { key: "pid", dir: 1 },
+};
+try {
+  const s = JSON.parse(localStorage.getItem("bel2-ui") || "{}");
+  if (s.view) S.view = s.view; if (s.span) S.span = s.span; if (typeof s.hide === "boolean") S.hide = s.hide;
+} catch (e) {}
+const saveUi = () => { try { localStorage.setItem("bel2-ui", JSON.stringify({ view: S.view, span: S.span, hide: S.hide })); } catch (e) {} };
+
+const personById = id => S.people.find(p => p.id === id);
+const personName = id => personById(id)?.name || "Ingen projektör";
+const hoursAt = (p, key) => +(p.t?.[key] || 0);
+const plannedAhead = p => Object.entries(p.t || {}).reduce((s, [k, v]) => { const i = idxOf(k); return s + (i != null && i >= NOW ? +v || 0 : 0); }, 0);
+const plannedTotal = p => Object.values(p.t || {}).reduce((s, v) => s + (+v || 0), 0);
+const active = () => S.projects.filter(p => !p.arkiv);
+function personLoad(pid, key) { return active().filter(p => p.pid === pid).reduce((s, p) => s + hoursAt(p, key), 0); }
+
+function flagsOf(p) {
+  const f = [];
+  const rest = p.h != null ? p.h - (p.u || 0) : null;
+  if (rest != null && rest < 0) f.push(["Över budget", "bad", "budget"]);
+  const ahead = plannedAhead(p);
+  if (rest != null && ahead > rest && rest >= 0) f.push(["Planerat mer än återstår", "warn", "budget"]);
+  if (!p.arkiv && ahead > 0 && p.h == null) f.push(["Timmar utan budget", "warn", "budget"]);
+  const markAhead = Object.keys(p.mark || {}).filter(k => { const i = idxOf(k); return i >= NOW && !hoursAt(p, k); }).length;
+  if (!p.arkiv && markAhead) f.push([`${markAhead} markerade veckor utan timmar`, "warn", "mark"]);
+  if (!p.nr) f.push(["Projektnummer saknas", "bad", "info"]);
+  if (!p.pl || /^tbd$/i.test(p.pl)) f.push([p.pl ? "Projektledare TBD" : "Projektledare saknas", "warn", "info"]);
+  if (!p.pid || !personById(p.pid)) f.push(["Projektör saknas", "bad", "info"]);
+  return f;
 }
 
-/* Gemensamt veckohuvud */
-function weekHeader([a, b], labelText) {
-  const n = b - a + 1;
-  let yr = `<div class="hd lab">${labelText}</div>`, wk = `<div class="hd lab"></div>`;
-  let prevY = null;
-  for (let i = a; i <= b; i++) {
-    const k = isoWeek(i), nowc = i === NOW ? " now" : "", ms = (prevY !== null && k.y !== prevY) ? " mstart" : "";
-    yr += `<div class="hd yr${ms}${k.y !== prevY ? " has" : ""}">${k.y !== prevY ? k.y : ""}</div>`;
-    prevY = k.y;
-    wk += `<div class="hd wk${nowc}${k.w === 1 ? " mstart" : ""}" title="${wkLabel(i)}">${n > 60 && k.w % 4 !== 1 && i !== NOW ? "" : k.w}</div>`;
+/* ---------- Skrivningar: en i taget per dokument ---------- */
+const queues = new Map();
+let pending = 0;
+function setSync(kind, text) { const el = $("sync"); el.className = "chip sync " + kind; el.querySelector("span").textContent = text; }
+function write(path, fn) {
+  const prev = queues.get(path) || Promise.resolve();
+  pending++; setSync("busy", "Sparar…");
+  const next = prev.catch(() => {}).then(fn).then(() => {
+    pending--; if (!pending) setSync("ok", "Allt sparat");
+  }, e => {
+    pending--;
+    setSync("err", "Kunde inte spara");
+    if (e?.code === "invalid_argument" && !S.writeChecked) { S.canWrite = false; renderAll(); toast("Du har bara läsbehörighet till den här planen."); }
+    else if (e?.code === "quota_exceeded") toast("Databasen är full. Ta bort gamla projekt och försök igen.");
+    else toast("Ändringen sparades inte. Försök igen om en stund.");
+    throw e;
+  });
+  queues.set(path, next);
+  return next;
+}
+
+/* ---------- Nyckeltal ---------- */
+function renderKpis() {
+  const key = keyOf(NOW);
+  const people = S.people;
+  const capNow = people.reduce((s, p) => s + (+p.cap || 0), 0);
+  const hNow = active().reduce((s, p) => s + hoursAt(p, key), 0);
+  let overCount = 0; const overPeople = new Set();
+  for (let i = NOW; i < NOW + 8; i++) for (const pe of people) { const h = personLoad(pe.id, keyOf(i)); if (pe.cap && h > pe.cap) { overCount++; overPeople.add(pe.name); } }
+  const withHours = active().filter(p => plannedAhead(p) > 0).length;
+  const ahead = active().reduce((s, p) => s + plannedAhead(p), 0);
+  const rest = active().reduce((s, p) => s + (p.h != null ? Math.max(0, p.h - (p.u || 0)) : 0), 0);
+  $("kpis").innerHTML = `
+    <div class="kpi"><span class="eyebrow">Belagt denna vecka</span><span class="v num">${fmt(hNow)}<small>/ ${fmt(capNow)} h</small></span><span class="s">${capNow ? Math.round(hNow / capNow * 100) : 0} % av den totala kapaciteten</span></div>
+    <div class="kpi ${overCount ? "alert" : ""}"><span class="eyebrow">Överbelagt kommande 8 v.</span><span class="v num">${overCount}<small>veckor</small></span><span class="s">${overPeople.size ? esc([...overPeople].join(", ")) : "Ingen är överbelagd"}</span></div>
+    <div class="kpi"><span class="eyebrow">Planerat framåt</span><span class="v num">${fmt(ahead)}<small>h</small></span><span class="s">i ${withHours} projekt, mot ${fmt(rest)} h kvar av budgetarna</span></div>
+    <div class="kpi"><span class="eyebrow">Projekt</span><span class="v num">${active().length}</span><span class="s">${people.length} projektörer${S.projects.length - active().length ? `, ${S.projects.length - active().length} arkiverade` : ""}</span></div>`;
+}
+
+/* ---------- Veckohuvud ---------- */
+function weekHeader(a, n, title) {
+  let yr = `<div class="hd lab">${title}</div>`, wk = `<div class="hd lab"></div>`, prevY = null;
+  for (let i = a; i < a + n; i++) {
+    const k = isoOf(i);
+    yr += `<div class="hd yr${k.y !== prevY ? " has" : ""}">${k.y !== prevY ? k.y : ""}</div>`; prevY = k.y;
+    wk += `<div class="hd${i === NOW ? " now" : ""}" title="${labelOf(i)}">${k.w}</div>`;
   }
   return yr + wk;
 }
-function heatClass(c) { return "h" + Math.min(c, 5); }
+const cwFor = n => n > 30 ? 34 : 46;
 
-/* Beläggningskarta */
+/* ---------- Beläggningskarta ---------- */
 function renderHeat() {
-  const [a, b] = weekRange();
-  const n = b - a + 1, cw = n > 60 ? 12 : 26;
-  let html = `<div class="grid heat" style="--n:${n};--cw:${cw}px">` + weekHeader([a, b], "Projektör");
-  for (const pers of PEOPLE) {
-    const rows = P.filter(p => p.pers === pers);
-    html += `<div class="lab ${state.p === pers ? "on" : ""}" data-p="${esc(pers)}" tabindex="0" role="button"><span>${esc(pers)}</span><span class="cnt">${rows.length} proj</span></div>`;
-    for (let i = a; i <= b; i++) {
-      const c = rows.filter(p => p.wset.has(i)).length;
-      const sem = SEM.includes(i) ? " sem" : "";
-      html += `<div class="cell ${heatClass(c)}${sem}${i === NOW ? " now" : ""}${isoWeek(i).w === 1 ? " mstart" : ""}" title="${esc(pers)}, ${wkLabel(i)}: ${c} projekt">${cw > 20 && c ? c : ""}</div>`;
+  const a = S.ws, n = S.span, el = $("heat");
+  if (!S.people.length) { el.innerHTML = `<div class="empty">${S.loaded.people ? "Inga projektörer än." + (S.canWrite ? " Lägg till den första med ”+ Projektör”." : "") : "Hämtar projektörer…"}</div>`; return; }
+  let html = `<div class="grid heat" style="--n:${n};--cw:${cwFor(n)}px">` + weekHeader(a, n, "Projektör");
+  const totals = new Array(n).fill(0); let capTot = 0;
+  for (const pe of S.people) {
+    capTot += +pe.cap || 0;
+    html += `<div class="lab ${S.pid === pe.id ? "on" : ""}"><div class="who" data-filter="${esc(pe.id)}" role="button" tabindex="0"><b>${esc(pe.name)}</b></div>
+      <button class="btn icon mono" type="button" data-cap="${esc(pe.id)}" title="Ändra kapacitet" ${S.canWrite ? "" : "disabled"}>${fmt(pe.cap)} h/v</button></div>`;
+    for (let j = 0; j < n; j++) {
+      const i = a + j, h = personLoad(pe.id, keyOf(i)); totals[j] += h;
+      html += `<div class="cell ld ${loadClass(h, +pe.cap)}${i === NOW ? " now" : ""}" title="${esc(pe.name)}, ${labelOf(i)}: ${fmt(h)} av ${fmt(pe.cap)} h">${h ? fmt(h) : ""}</div>`;
     }
   }
-  const el = document.getElementById("heat");
+  html += `<div class="lab tot" style="background:var(--surface-2);font-weight:600">Totalt <span class="mono" style="font-weight:400;color:var(--muted);font-size:11px">${fmt(capTot)} h/v</span></div>`;
+  totals.forEach((h, j) => html += `<div class="cell ld ${loadClass(h, capTot)}${a + j === NOW ? " now" : ""}" style="font-weight:600">${h ? fmt(h) : ""}</div>`);
   el.innerHTML = html + "</div>";
-  el.querySelectorAll(".lab[data-p]").forEach(l => {
-    const go = () => { state.p = state.p === l.dataset.p ? "" : l.dataset.p; document.getElementById("fp").value = state.p; renderHeat(); renderMain(); };
-    l.addEventListener("click", go);
-    l.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
-  });
-  if (state.range === "kommande") el.scrollLeft = 0;
 }
 
-/* Veckoplan */
-function renderPlan(rows) {
-  const el = document.getElementById("planGrid");
+/* ---------- Filter ---------- */
+function visibleProjects() {
+  const q = S.q.trim().toLowerCase(), a = S.ws, n = S.span;
+  return S.projects.filter(p =>
+    (S.arch || !p.arkiv) &&
+    (!S.pid || p.pid === S.pid) &&
+    (!q || [p.n, p.nr, p.pl, p.hp, p.st, personName(p.pid)].some(x => x && String(x).toLowerCase().includes(q))) &&
+    (!S.hide || (() => { for (let i = a; i < a + n; i++) if (hoursAt(p, keyOf(i))) return true; return false; })())
+  );
+}
+
+/* ---------- Veckoplan ---------- */
+function cellValue(p, key) { const h = hoursAt(p, key), m = p.ms?.[key] || ""; return [h ? fmt(h) : "", m].filter(Boolean).join(" "); }
+function renderPlan() {
+  const el = $("planGrid");
+  if (!S.loaded.projects) { el.innerHTML = `<div class="empty">Hämtar projekt…</div>`; return; }
+  const rows = visibleProjects();
+  if (!S.projects.length) { el.innerHTML = `<div class="empty"><b>Inga projekt än.</b><span>${S.canWrite ? "Lägg till det första med ”+ Nytt projekt”." : "Projekt visas här när någon lägger in dem."}</span></div>`; return; }
   if (!rows.length) { el.innerHTML = `<div class="empty">Inga projekt matchar filtret. Rensa sökningen eller välj en annan projektör.</div>`; return; }
-  const [a, b] = weekRange();
-  const n = b - a + 1, cw = n > 60 ? 12 : 26;
-  let html = `<div class="grid plan" style="--n:${n};--cw:${cw}px">` + weekHeader([a, b], "Projekt");
-  for (const pers of PEOPLE) {
-    const g = rows.filter(p => p.pers === pers).sort((x, y) => (x.next ?? 1e9) - (y.next ?? 1e9) || (y.last ?? -1) - (x.last ?? -1));
+  const a = S.ws, n = S.span, dis = S.canWrite ? "" : "disabled";
+  let html = `<div class="grid plan" style="--n:${n};--cw:${cwFor(n)}px">` + weekHeader(a, n, "Projekt");
+  const groups = [...S.people.map(pe => pe.id), ...new Set(rows.filter(p => !personById(p.pid)).map(p => p.pid || ""))];
+  for (const gid of groups) {
+    const g = rows.filter(p => (p.pid || "") === gid);
     if (!g.length) continue;
-    html += `<div class="grp">${esc(pers)} <span>· ${g.length} projekt</span></div>`;
+    const pe = personById(gid);
+    g.sort((x, y) => (x.arkiv - y.arkiv) || (x.order ?? 1e9) - (y.order ?? 1e9) || x.n.localeCompare(y.n, "sv"));
+    html += `<div class="lab grp"><span class="gname">${esc(pe ? pe.name : "Ingen projektör")}</span><span class="gsub">${g.length} proj · ${pe ? fmt(pe.cap) + " h/v" : ""}</span></div>`;
+    for (let j = 0; j < n; j++) {
+      const i = a + j, h = pe ? personLoad(pe.id, keyOf(i)) : 0;
+      html += `<div class="cell grp ld ${pe ? loadClass(h, +pe.cap) : "z"}${i === NOW ? " now" : ""}" title="Summa ${labelOf(i)}">${h ? fmt(h) : ""}</div>`;
+    }
     for (const p of g) {
-      const tip = `${p.n} (${p.nr || "nr saknas"})\nProjektledare: ${p.plN || "–"}${p.hp ? "\nHjälpprojektör: " + p.hp : ""}\nStatus: ${p.st || "–"}`;
-      html += `<div class="lab" title="${esc(tip)}"><span class="t">${esc(p.n)}</span><span class="sub"><span class="mono">${esc(p.nr || "–")}</span>${p.plN ? "· " + esc(p.plN) : ""} <span class="pill ${p.sc}">${esc(p.st || "Status saknas")}</span></span></div>`;
-      for (let i = a; i <= b; i++) {
-        const w = p.wset.get(i);
-        let inner = "";
-        if (w) {
-          const prev = p.wset.get(i - 1), next = p.wset.get(i + 1);
-          const st = !prev || prev.c !== w.c ? " start" : "", en = !next || next.c !== w.c ? " end" : "";
-          inner = `<span class="blk ${w.c}${st}${en}"></span>${w.t ? `<span class="ms">${esc(w.t)}</span>` : ""}`;
-        }
-        html += `<div class="cell${i === NOW ? " now" : ""}${SEM.includes(i) ? " sem" : ""}${isoWeek(i).w === 1 ? " mstart" : ""}" ${w ? `title="${esc(p.n)} · ${wkLabel(i)}${w.t ? " · " + esc(w.t) : ""}"` : ""}>${inner}</div>`;
+      html += `<div class="lab pl${p.arkiv ? " arch" : ""}" title="${esc(p.n)}${p.anm ? "\n" + esc(p.anm) : ""}">
+        <div class="txt"><span class="t">${esc(p.n)}</span><span class="sub"><span class="mono">${esc(p.nr || "–")}</span>${p.pl ? "· " + esc(p.pl) : ""}${p.st ? ` <span class="pill ${statusClass(p.st)}">${esc(p.st)}</span>` : ""}</span></div>
+        <button class="edit" type="button" data-edit="${esc(p.id)}">${S.canWrite ? "Ändra" : "Visa"}</button></div>`;
+      for (let j = 0; j < n; j++) {
+        const i = a + j, key = keyOf(i), h = hoursAt(p, key), mk = p.mark?.[key], ms = p.ms?.[key];
+        html += `<div class="cell hcell${h ? " has" : ""}${mk ? " mk-" + mk : ""}${i === NOW ? " now" : ""}">${ms ? `<span class="ms">${esc(ms)}</span>` : ""}<input inputmode="decimal" aria-label="${esc(p.n)}, ${labelOf(i)}" data-p="${esc(p.id)}" data-k="${key}" value="${h ? fmt(h) : ""}" ${dis} autocomplete="off">${mk && h ? `<i class="mkbar ${mk}"></i>` : ""}</div>`;
       }
     }
   }
   el.innerHTML = html + "</div>";
 }
 
-/* Tabell */
-const COLS = [
-  { key: "n", label: "Projekt" }, { key: "nr", label: "Projektnr" }, { key: "pers", label: "Projektör" },
-  { key: "hp", label: "Hjälpprojektör" }, { key: "plN", label: "Projektledare" }, { key: "st", label: "Status" },
-  { key: "next", label: "Nästa planerade vecka" }, { key: "h", label: "Budget h", r: 1 }, { key: "u", label: "Upparbetat h", r: 1 },
-  { key: "j", label: "Återstår h", r: 1 }, { key: "flags", label: "Att åtgärda" },
-];
-function sortVal(p, k) {
-  if (k === "flags") return p.flags.length;
-  const v = p[k];
-  if (v == null) return ["h", "u", "j", "next"].includes(k) ? (k === "next" ? 1e9 : -1e9) : "￿";
-  return v;
+function parseCell(raw) {
+  const s = raw.trim().replace(",", ".");
+  if (!s) return { h: 0, ms: "" };
+  const m = /^(\d+(?:\.\d+)?)?\s*([A-Za-zÅÄÖåäö][A-Za-zÅÄÖåäö0-9\-]{0,7})?$/.exec(s);
+  if (!m) return null;
+  const h = m[1] ? +m[1] : 0;
+  if (h > 168) return null;
+  return { h, ms: m[2] ? m[2].toUpperCase() : "" };
 }
-function renderTable(rows) {
-  const el = document.getElementById("tableView");
-  if (!rows.length) { el.innerHTML = `<div class="empty">Inga projekt matchar filtret.</div>`; return; }
-  const { key, dir } = state.sort;
-  const sorted = [...rows].sort((x, y) => {
-    const a = sortVal(x, key), b = sortVal(y, key);
-    const c = typeof a === "string" && typeof b === "string" ? a.localeCompare(b, "sv") : (a > b) - (a < b);
-    return (c || x.idx - y.idx) * dir;
-  });
-  const sum = k => rows.reduce((s, p) => s + (p[k] || 0), 0);
-  el.innerHTML = `<table class="proj"><thead><tr>${COLS.map(c => `<th class="${c.r ? "r" : ""}" data-k="${c.key}" tabindex="0" ${key === c.key ? `aria-sort="${dir > 0 ? "ascending" : "descending"}"` : ""}>${c.label}</th>`).join("")}</tr></thead>
-  <tbody>${sorted.map(p => {
-    const pctU = p.h ? p.u / p.h : null;
-    return `<tr>
-      <td class="name">${esc(p.n)}</td>
-      <td class="nr">${p.nr ? esc(p.nr) : '<span class="neg">saknas</span>'}</td>
-      <td>${esc(p.pers)}</td>
-      <td>${esc(p.hp || "–")}</td>
-      <td>${esc(p.plN || "–")}</td>
-      <td><span class="pill ${p.sc}">${esc(p.st || "Saknas")}</span></td>
-      <td class="num">${p.next != null ? wkLabel(p.next) : p.last != null ? `<span style="color:var(--muted)">senast ${wkLabel(p.last)}</span>` : "–"}</td>
-      <td class="r num">${fmt(p.h)}</td>
-      <td class="r num"><div class="hrs">${fmt(p.u)}${pctU != null && p.u != null ? `<span class="track ${pctU > 1 ? "over" : ""}" title="${Math.round(pctU * 100)} % av budget"><i style="width:${Math.min(100, pctU * 100)}%"></i></span>` : ""}</div></td>
-      <td class="r num ${p.j < 0 ? "neg" : ""}">${fmt(p.j)}</td>
-      <td><div class="flagcell">${p.flags.map(f => `<span class="pill ${f[1]}">${f[0]}</span>`).join("")}</div></td>
-    </tr>`;
-  }).join("")}</tbody>
-  <tfoot><tr><td colspan="7">Summa (${rows.length} projekt)</td><td class="r num">${fmt(sum("h"))}</td><td class="r num">${fmt(sum("u"))}</td><td class="r num">${fmt(sum("j"))}</td><td></td></tr></tfoot></table>`;
-  el.querySelectorAll("th[data-k]").forEach(th => {
-    const go = () => { const k = th.dataset.k; state.sort = state.sort.key === k ? { key: k, dir: -state.sort.dir } : { key: k, dir: ["h", "u", "j", "flags"].includes(k) ? -1 : 1 }; renderTable(filtered()); };
-    th.addEventListener("click", go);
-    th.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
-  });
+function commitCell(inp) {
+  const p = S.projects.find(x => x.id === inp.dataset.p); if (!p) return;
+  const key = inp.dataset.k;
+  const parsed = parseCell(inp.value);
+  if (!parsed) { toast("Skriv antal timmar, till exempel 16 eller 16 BH."); inp.value = cellValue(p, key); return; }
+  const curH = hoursAt(p, key), curM = p.ms?.[key] || "";
+  if (parsed.h === curH && parsed.ms === curM) { inp.value = cellValue(p, key); return; }
+  const patch = { t: { [key]: parsed.h } };
+  if (parsed.ms !== curM) patch.ms = { [key]: parsed.ms };
+  write("projects/" + p.id, () => S.db.collection("projects").doc(p.id).update(patch));
 }
 
-/* Att åtgärda */
+/* ---------- Tabell ---------- */
+const COLS = [
+  { key: "n", label: "Projekt" }, { key: "nr", label: "Projektnr" }, { key: "pid", label: "Projektör" }, { key: "pl", label: "Projektledare" },
+  { key: "st", label: "Status" }, { key: "h", label: "Budget h", r: 1 }, { key: "u", label: "Upparbetat h", r: 1 }, { key: "rest", label: "Återstår h", r: 1 },
+  { key: "ahead", label: "Planerat framåt h", r: 1 }, { key: "next", label: "Nästa vecka" }, { key: "flags", label: "Att åtgärda" },
+];
+function derived(p) {
+  const rest = p.h != null ? p.h - (p.u || 0) : null;
+  const nextKey = Object.keys(p.t || {}).filter(k => +p.t[k] && idxOf(k) >= NOW).sort()[0];
+  return { rest, ahead: plannedAhead(p), next: nextKey ? idxOf(nextKey) : null, flags: flagsOf(p) };
+}
+function renderTable() {
+  const el = $("tableView");
+  if (!S.loaded.projects) { el.innerHTML = `<div class="empty">Hämtar projekt…</div>`; return; }
+  const rows = visibleProjects().map(p => ({ p, d: derived(p) }));
+  if (!rows.length) { el.innerHTML = `<div class="empty">${S.projects.length ? "Inga projekt matchar filtret." : "Inga projekt än."}</div>`; return; }
+  const { key, dir } = S.sort;
+  const val = r => key === "pid" ? personName(r.p.pid) : key === "flags" ? r.d.flags.length : key in r.d ? r.d[key] : r.p[key];
+  rows.sort((x, y) => {
+    let a = val(x), b = val(y);
+    if (a == null || a === "") return 1; if (b == null || b === "") return -1;
+    const c = typeof a === "string" ? a.localeCompare(b, "sv") : (a > b) - (a < b);
+    return c * dir || (x.p.order ?? 0) - (y.p.order ?? 0);
+  });
+  const sum = f => rows.reduce((s, r) => s + (+f(r) || 0), 0);
+  el.innerHTML = `<table class="proj"><thead><tr>${COLS.map(c => `<th class="${c.r ? "r" : ""}" data-sort="${c.key}" tabindex="0" ${key === c.key ? `aria-sort="${dir > 0 ? "ascending" : "descending"}"` : ""}>${c.label}</th>`).join("")}</tr></thead>
+  <tbody>${rows.map(({ p, d }) => `<tr data-edit="${esc(p.id)}">
+    <td class="name">${esc(p.n)}${p.arkiv ? ' <span class="pill mute">Arkiverad</span>' : ""}</td>
+    <td class="nr">${p.nr ? esc(p.nr) : '<span class="neg">saknas</span>'}</td>
+    <td>${esc(personName(p.pid))}</td><td>${esc(p.pl || "–")}</td>
+    <td>${p.st ? `<span class="pill ${statusClass(p.st)}">${esc(p.st)}</span>` : "–"}</td>
+    <td class="r num">${fmt(p.h)}</td><td class="r num">${fmt(p.u)}</td>
+    <td class="r num ${d.rest < 0 ? "neg" : ""}">${fmt(d.rest)}</td>
+    <td class="r num ${d.rest != null && d.ahead > d.rest ? "neg" : ""}">${d.ahead ? fmt(d.ahead) : "–"}</td>
+    <td class="num">${d.next != null ? labelOf(d.next) : "–"}</td>
+    <td><div class="flagcell">${d.flags.map(f => `<span class="pill ${f[1]}">${esc(f[0])}</span>`).join("")}</div></td></tr>`).join("")}</tbody>
+  <tfoot><tr><td colspan="5">Summa (${rows.length} projekt)</td><td class="r num">${fmt(sum(r => r.p.h))}</td><td class="r num">${fmt(sum(r => r.p.u))}</td><td class="r num">${fmt(sum(r => r.d.rest))}</td><td class="r num">${fmt(sum(r => r.d.ahead))}</td><td colspan="2"></td></tr></tfoot></table>`;
+}
+
+/* ---------- Att åtgärda ---------- */
 function renderIssues() {
   const cats = [
-    { k: "budget", t: "Timbudget", c: "bad", d: "Projekt som har gått över budget, eller som har återstående timmar utan angiven budget.",
-      x: p => p.j < 0 ? `${fmt(p.u)} av ${fmt(p.h)} h (${fmt(p.j)} h)` : `återstår ${p.j} h, budget saknas` },
-    { k: "nr", t: "Projektnummer saknas", c: "bad", d: "Projekt utan projektnummer.", x: () => "" },
-    { k: "namn", t: "Olika stavning", c: "warn", d: "Samma person eller status skrivs på olika sätt, vilket gör att filter och summeringar delas upp.",
-      x: p => p.flags.filter(f => f[2] === "namn").map(f => f[0] === "Projektör stavas olika" ? `”${p.p}” i stället för ”${p.pers}”` : f[0] === "Stavfel i status" ? `status ”${p.st}”` : `projektledare ”${p.pl}”`).join(", ") },
-    { k: "pl", t: "Projektledare saknas eller oklar", c: "warn", d: "Tomt fält, TBD eller en anteckning i stället för ett namn.",
-      x: p => p.flags.filter(f => f[2] === "pl").map(f => f[0] === "Hjälpprojektör oklar" ? `hjälpprojektör: ”${p.hp}”` : f[0] === "Projektledare TBD" ? "TBD" : "tomt").join(", ") },
-    { k: "status", t: "Status saknas", c: "warn", d: "Kolumnen BH Datum är tom.", x: () => "" },
+    { k: "budget", t: "Timbudget", c: "bad", d: "Över budget, mer planerat framåt än det som återstår, eller inlagda timmar utan budget." },
+    { k: "mark", t: "Markerade veckor utan timmar", c: "warn", d: "Veckor framåt som var färgmarkerade i Excel-listan men saknar inlagda timmar." },
+    { k: "info", t: "Uppgifter saknas", c: "warn", d: "Projektnummer, projektör eller projektledare saknas eller står som TBD." },
   ];
-  document.getElementById("issues").innerHTML = cats.map(cat => {
-    const rows = P.filter(p => p.flags.some(f => f[2] === cat.k));
-    if (!rows.length) return "";
-    return `<div class="issue"><h3>${cat.t}<span class="pill ${cat.c}">${rows.length}</span></h3><p>${cat.d}</p><ul>${rows.map(p => {
-      const ex = cat.x(p);
-      return `<li><span class="mono">${esc(p.nr || "–")}</span><span>${esc(p.n)} <em>(${esc(p.pers)})${ex ? " · " + esc(ex) : ""}</em></span></li>`;
-    }).join("")}</ul></div>`;
+  const all = active().map(p => ({ p, f: flagsOf(p) }));
+  $("issues").innerHTML = cats.map(cat => {
+    const rows = all.filter(r => r.f.some(f => f[2] === cat.k));
+    if (!rows.length) return `<div class="issue"><h3>${cat.t}<span class="pill good">0</span></h3><p>Inget att åtgärda.</p></div>`;
+    return `<div class="issue"><h3>${cat.t}<span class="pill ${cat.c}">${rows.length}</span></h3><p>${cat.d}</p><ul>${rows.map(({ p, f }) =>
+      `<li><span class="mono">${esc(p.nr || "–")}</span><button type="button" data-edit="${esc(p.id)}">${esc(p.n)} <em>(${esc(personName(p.pid))}) · ${esc(f.filter(x => x[2] === cat.k).map(x => x[0]).join(", "))}</em></button></li>`).join("")}</ul></div>`;
   }).join("");
 }
 
-function renderMain() {
-  const rows = filtered();
-  document.getElementById("count").textContent = `${rows.length} av ${P.length} projekt`;
-  document.getElementById("planView").hidden = state.view !== "plan";
-  document.getElementById("tableView").hidden = state.view !== "tabell";
-  document.querySelectorAll("#view button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.view));
-  document.querySelectorAll("#range button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === state.range));
-  if (state.view === "plan") renderPlan(rows); else renderTable(rows);
+/* ---------- Rendering med fokus kvar ---------- */
+function renderAll() {
+  const ae = document.activeElement;
+  const focus = ae && ae.dataset && ae.dataset.p ? { p: ae.dataset.p, k: ae.dataset.k, v: ae.value, s: ae.selectionStart, e: ae.selectionEnd } : null;
+  const sx = $("planGrid").scrollLeft;
+  $("nowChip").innerHTML = `Aktuell vecka: <b>${labelOf(NOW)}</b>`;
+  $("addProject").hidden = $("addPerson").hidden = !S.canWrite;
+  $("planView").hidden = S.view !== "plan"; $("tableView").hidden = S.view !== "tabell";
+  document.querySelectorAll("#view button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === S.view));
+  const fp = $("fp"), cur = S.pid;
+  fp.innerHTML = `<option value="">Alla projektörer</option>` + S.people.map(pe => `<option value="${esc(pe.id)}">${esc(pe.name)}</option>`).join("");
+  fp.value = cur;
+  renderKpis(); renderHeat(); renderIssues();
+  if (S.view === "plan") renderPlan(); else renderTable();
+  $("planGrid").scrollLeft = sx;
+  if (focus) {
+    const el = document.querySelector(`#planGrid input[data-p="${CSS.escape(focus.p)}"][data-k="${focus.k}"]`);
+    if (el) { S.restoring = true; el.focus({ preventScroll: true }); S.restoring = false; el.value = focus.v; try { el.setSelectionRange(focus.s, focus.e); } catch (e) {} }
+  }
+}
+let rq = 0;
+function scheduleRender() { if (rq) return; rq = requestAnimationFrame(() => { rq = 0; renderAll(); }); }
+
+/* ---------- Dialoger ---------- */
+function closeDlg() { $("dlgRoot").innerHTML = ""; }
+function openDlg(html, onMount) {
+  $("dlgRoot").innerHTML = `<div class="overlay" id="ov"><div class="dlg" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("ov").addEventListener("mousedown", e => { if (e.target.id === "ov") closeDlg(); });
+  onMount($("dlgRoot").querySelector("form"));
+  $("dlgRoot").querySelector("input, select, textarea")?.focus();
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("dlgRoot").innerHTML) closeDlg(); });
+
+function armButton(btn, label, action) {
+  btn.addEventListener("click", () => {
+    if (btn.classList.contains("armed")) return action();
+    btn.classList.add("armed"); btn.textContent = label;
+    setTimeout(() => { btn.classList.remove("armed"); btn.textContent = btn.dataset.orig; }, 4000);
+  });
 }
 
-/* Init */
-const fp = document.getElementById("fp");
-PEOPLE.forEach(p => fp.insertAdjacentHTML("beforeend", `<option value="${esc(p)}">${esc(p)}</option>`));
-const fst = document.getElementById("fst");
-[...new Set(P.map(p => p.sg))].sort((a, b) => a.localeCompare(b, "sv")).forEach(s => fst.insertAdjacentHTML("beforeend", `<option value="${esc(s)}">${esc(s)}</option>`));
-fp.addEventListener("change", () => { state.p = fp.value; renderHeat(); renderMain(); });
-fst.addEventListener("change", () => { state.st = fst.value; renderMain(); });
-document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; renderMain(); });
-document.getElementById("fplan").addEventListener("change", e => { state.plan = e.target.checked; renderMain(); });
-document.getElementById("fi").addEventListener("change", e => { state.issues = e.target.checked; renderMain(); });
-document.querySelectorAll("#range button").forEach(b => b.addEventListener("click", () => { state.range = b.dataset.v; save(); renderHeat(); renderMain(); }));
-document.querySelectorAll("#view button").forEach(b => b.addEventListener("click", () => { state.view = b.dataset.v; save(); renderMain(); }));
-renderTop(); renderHeat(); renderIssues(); renderMain();
+function projectDialog(id) {
+  const p = id ? S.projects.find(x => x.id === id) : null;
+  const ro = !S.canWrite;
+  const sts = [...new Set(S.projects.map(x => x.st).filter(Boolean))].sort((a, b) => a.localeCompare(b, "sv"));
+  const v = f => esc(p?.[f] ?? "");
+  openDlg(`<form novalidate>
+    <h3>${p ? (ro ? "Projekt" : "Ändra projekt") : "Nytt projekt"}</h3>
+    <div class="field"><label for="f-n">Projektnamn</label><input id="f-n" name="n" value="${v("n")}" required maxlength="120" ${ro ? "disabled" : ""}></div>
+    <div class="row">
+      <div class="field"><label for="f-nr">Projektnummer</label><input id="f-nr" name="nr" value="${v("nr")}" maxlength="30" placeholder="t.ex. P26042" ${ro ? "disabled" : ""}></div>
+      <div class="field"><label for="f-pid">Projektör</label><select id="f-pid" name="pid" ${ro ? "disabled" : ""}>${S.people.map(pe => `<option value="${esc(pe.id)}" ${(p ? p.pid : S.pid) === pe.id ? "selected" : ""}>${esc(pe.name)}</option>`).join("")}</select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="f-hp">Hjälpprojektör</label><input id="f-hp" name="hp" value="${v("hp")}" maxlength="60" ${ro ? "disabled" : ""}></div>
+      <div class="field"><label for="f-pl">Projektledare</label><input id="f-pl" name="pl" value="${v("pl")}" maxlength="60" ${ro ? "disabled" : ""}></div>
+    </div>
+    <div class="field"><label for="f-st">Status</label><input id="f-st" name="st" list="stlist" value="${v("st")}" maxlength="60" placeholder="t.ex. Pågår, BH klar, GH v. 5" ${ro ? "disabled" : ""}><datalist id="stlist">${sts.map(s => `<option value="${esc(s)}">`).join("")}</datalist></div>
+    <div class="row">
+      <div class="field"><label for="f-h">Budgeterade timmar</label><input id="f-h" name="h" inputmode="decimal" value="${v("h")}" ${ro ? "disabled" : ""}></div>
+      <div class="field"><label for="f-u">Upparbetade timmar</label><input id="f-u" name="u" inputmode="decimal" value="${v("u")}" ${ro ? "disabled" : ""}></div>
+    </div>
+    <div class="field"><label for="f-anm">Anteckning</label><textarea id="f-anm" name="anm" maxlength="1000" ${ro ? "disabled" : ""}>${v("anm")}</textarea></div>
+    ${p ? `<p class="hint">Inlagt totalt: ${fmt(plannedTotal(p))} h, varav ${fmt(plannedAhead(p))} h från och med denna vecka.</p>` : ""}
+    <p class="err" id="f-err" hidden></p>
+    <div class="acts">
+      <div>${p && !ro ? `<button class="btn" type="button" id="f-arch">${p.arkiv ? "Återställ från arkiv" : "Arkivera"}</button><button class="btn danger" type="button" id="f-del" data-orig="Ta bort">Ta bort</button>` : ""}</div>
+      <div><button class="btn" type="button" id="f-cancel">${ro ? "Stäng" : "Avbryt"}</button>${ro ? "" : `<button class="btn primary" type="submit">${p ? "Spara" : "Lägg till projekt"}</button>`}</div>
+    </div></form>`, form => {
+    $("f-cancel").onclick = closeDlg;
+    if (ro) return;
+    const num = s => { s = String(s).trim().replace(",", "."); if (!s) return null; const n = +s; return isFinite(n) && n >= 0 ? n : NaN; };
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const fd = Object.fromEntries(new FormData(form));
+      const err = $("f-err");
+      const h = num(fd.h), u = num(fd.u);
+      if (!fd.n.trim()) { err.textContent = "Skriv ett projektnamn."; err.hidden = false; return; }
+      if (Number.isNaN(h) || Number.isNaN(u)) { err.textContent = "Timmar måste vara ett tal, till exempel 250."; err.hidden = false; return; }
+      if (!fd.pid) { err.textContent = "Lägg till en projektör först."; err.hidden = false; return; }
+      const data = { n: fd.n.trim(), nr: fd.nr.trim(), pid: fd.pid, hp: fd.hp.trim(), pl: fd.pl.trim(), st: fd.st.trim(), h, u, anm: fd.anm.trim() };
+      if (p) write("projects/" + p.id, () => S.db.collection("projects").doc(p.id).update(data)).then(() => toast("Projektet sparades"));
+      else {
+        const ref = S.db.collection("projects").doc();
+        const order = Math.max(0, ...S.projects.map(x => x.order || 0)) + 1;
+        write("projects/" + ref.id, () => ref.set({ ...data, arkiv: false, order, t: {}, ms: {}, mark: {}, created: new Date().toISOString() })).then(() => toast("Projektet lades till"));
+      }
+      closeDlg();
+    });
+    if (p) {
+      $("f-arch").onclick = () => { write("projects/" + p.id, () => S.db.collection("projects").doc(p.id).update({ arkiv: !p.arkiv })).then(() => toast(p.arkiv ? "Projektet återställdes" : "Projektet arkiverades")); closeDlg(); };
+      armButton($("f-del"), "Klicka igen för att ta bort", () => { write("projects/" + p.id, () => S.db.collection("projects").doc(p.id).delete()).then(() => toast("Projektet togs bort")); closeDlg(); });
+    }
+  });
+}
+
+function personDialog(id) {
+  const pe = id ? personById(id) : null;
+  const n = pe ? S.projects.filter(p => p.pid === pe.id).length : 0;
+  openDlg(`<form novalidate>
+    <h3>${pe ? "Ändra projektör" : "Ny projektör"}</h3>
+    <div class="row">
+      <div class="field"><label for="g-name">Namn</label><input id="g-name" name="name" value="${esc(pe?.name || "")}" maxlength="60" required></div>
+      <div class="field"><label for="g-cap">Kapacitet, timmar per vecka</label><input id="g-cap" name="cap" inputmode="decimal" value="${esc(pe?.cap ?? 40)}"></div>
+    </div>
+    ${pe ? `<p class="hint">${n} projekt är kopplade till ${esc(pe.name)}.${n ? " Flytta eller ta bort dem innan projektören kan tas bort." : ""}</p>` : ""}
+    <p class="err" id="g-err" hidden></p>
+    <div class="acts"><div>${pe && !n ? `<button class="btn danger" type="button" id="g-del" data-orig="Ta bort">Ta bort</button>` : ""}</div>
+    <div><button class="btn" type="button" id="g-cancel">Avbryt</button><button class="btn primary" type="submit">${pe ? "Spara" : "Lägg till"}</button></div></div></form>`, form => {
+    $("g-cancel").onclick = closeDlg;
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = $("g-name").value.trim(), cap = +$("g-cap").value.trim().replace(",", ".");
+      const err = $("g-err");
+      if (!name) { err.textContent = "Skriv ett namn."; err.hidden = false; return; }
+      if (!isFinite(cap) || cap < 0 || cap > 168) { err.textContent = "Kapaciteten ska vara mellan 0 och 168 timmar."; err.hidden = false; return; }
+      if (pe) write("people/" + pe.id, () => S.db.collection("people").doc(pe.id).update({ name, cap })).then(() => toast("Sparat"));
+      else { const ref = S.db.collection("people").doc(); write("people/" + ref.id, () => ref.set({ name, cap, order: S.people.length })).then(() => toast(name + " lades till")); }
+      closeDlg();
+    });
+    if (pe && !n) armButton($("g-del"), "Klicka igen för att ta bort", () => { write("people/" + pe.id, () => S.db.collection("people").doc(pe.id).delete()); closeDlg(); });
+  });
+}
+
+/* ---------- Händelser ---------- */
+$("q").addEventListener("input", e => { S.q = e.target.value; scheduleRender(); });
+$("fp").addEventListener("change", e => { S.pid = e.target.value; scheduleRender(); });
+$("fhide").checked = S.hide;
+$("fhide").addEventListener("change", e => { S.hide = e.target.checked; saveUi(); scheduleRender(); });
+$("farch").addEventListener("change", e => { S.arch = e.target.checked; scheduleRender(); });
+$("span").value = String(S.span);
+$("span").addEventListener("change", e => { S.span = +e.target.value; saveUi(); scheduleRender(); });
+$("prev").onclick = () => { S.ws -= Math.max(4, Math.floor(S.span / 2)); scheduleRender(); };
+$("next").onclick = () => { S.ws += Math.max(4, Math.floor(S.span / 2)); scheduleRender(); };
+$("today").onclick = () => { S.ws = NOW - 2; scheduleRender(); };
+document.querySelectorAll("#view button").forEach(b => b.onclick = () => { S.view = b.dataset.v; saveUi(); scheduleRender(); });
+$("addProject").onclick = () => S.people.length ? projectDialog(null) : toast("Lägg till en projektör först.");
+$("addPerson").onclick = () => personDialog(null);
+
+document.addEventListener("click", e => {
+  const ed = e.target.closest("[data-edit]"); if (ed) return projectDialog(ed.dataset.edit);
+  const cap = e.target.closest("[data-cap]"); if (cap) return personDialog(cap.dataset.cap);
+  const f = e.target.closest("[data-filter]"); if (f) { S.pid = S.pid === f.dataset.filter ? "" : f.dataset.filter; scheduleRender(); return; }
+  const th = e.target.closest("th[data-sort]"); if (th) { const k = th.dataset.sort; S.sort = S.sort.key === k ? { key: k, dir: -S.sort.dir } : { key: k, dir: ["h", "u", "rest", "ahead", "flags"].includes(k) ? -1 : 1 }; scheduleRender(); }
+});
+document.addEventListener("keydown", e => {
+  const f = e.target.closest?.("[data-filter]"); if (f && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); f.click(); }
+});
+const grid = $("planGrid");
+const projOf = inp => S.projects.find(x => x.id === inp.dataset.p);
+grid.addEventListener("focusin", e => { const t = e.target; if (S.restoring || !t.matches("input[data-p]")) return; const p = projOf(t); if (p) t.value = cellValue(p, t.dataset.k); t.select(); });
+grid.addEventListener("focusout", e => { const t = e.target; if (!t.matches("input[data-p]")) return; const p = projOf(t); if (!p) return; const v = parseCell(t.value); if (!v || (v.h === hoursAt(p, t.dataset.k) && v.ms === (p.ms?.[t.dataset.k] || ""))) { const h = hoursAt(p, t.dataset.k); t.value = h ? fmt(h) : ""; } });
+grid.addEventListener("change", e => { if (e.target.matches("input[data-p]")) commitCell(e.target); });
+grid.addEventListener("keydown", e => {
+  const inp = e.target; if (!inp.matches("input[data-p]")) return;
+  if (e.key === "Escape") { const p = S.projects.find(x => x.id === inp.dataset.p); if (p) inp.value = cellValue(p, inp.dataset.k); inp.blur(); return; }
+  if (e.key !== "Enter" && e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  e.preventDefault();
+  const all = [...grid.querySelectorAll(`input[data-k="${inp.dataset.k}"]`)];
+  const i = all.indexOf(inp), nx = all[i + (e.key === "ArrowUp" ? -1 : 1)];
+  commitCell(inp);
+  if (nx) nx.focus();
+});
+
+/* ---------- Start ---------- */
+renderAll();
+(async () => {
+  const notice = $("notice");
+  const db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db) {
+    setSync("err", "Ingen databas");
+    notice.className = "notice err"; notice.hidden = false;
+    notice.textContent = "Planen kan inte hämtas här. Öppna sidan i Claude och logga in för att se och redigera beläggningen.";
+    S.loaded.projects = S.loaded.people = true; renderAll(); return;
+  }
+  S.db = db;
+  const user = await window.claude.use("user");
+  const can = user ? await user.can("data.write") : null;
+  S.canWrite = can !== false;
+  if (can === false) { notice.className = "notice"; notice.hidden = false; notice.textContent = "Du kan se planen men inte ändra den. Be ägaren om behörigheten Contributor eller Editor för att lägga in timmar."; }
+  let firstReal = { projects: false, people: false };
+  const timer = setTimeout(() => { if (!firstReal.projects) { setSync("err", "Kan inte nå databasen"); notice.className = "notice err"; notice.hidden = false; notice.textContent = "Planen kan inte hämtas just nu. Det som visas kan vara inaktuellt."; } }, 10000);
+  const onErr = e => { clearTimeout(timer); setSync("err", "Anslutningen bröts"); if (e?.code !== "revoked") { notice.className = "notice err"; notice.hidden = false; notice.textContent = "Anslutningen till planen bröts. Ladda om sidan för att fortsätta."; } S.canWrite = false; scheduleRender(); };
+  db.collection("people").onSnapshot(snap => {
+    S.people = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.name.localeCompare(b.name, "sv"));
+    S.loaded.people = true; if (!snap.metadata.fromCache) firstReal.people = true;
+    scheduleRender();
+  }, onErr);
+  db.collection("projects").onSnapshot(snap => {
+    S.projects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    S.loaded.projects = true;
+    if (!snap.metadata.fromCache) { firstReal.projects = true; clearTimeout(timer); if (!pending) setSync("ok", "Allt sparat"); if (notice.classList.contains("err")) notice.hidden = true; }
+    scheduleRender();
+  }, onErr);
+})();
 </script>
 
 </body>
