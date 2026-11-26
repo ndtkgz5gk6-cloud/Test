@@ -8,6 +8,7 @@ struct DayCount {
 
 struct ContentView: View {
     @Query private var allItems: [TodoItem]
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var selectedDate = Calendar.app.startOfDay(for: .now)
     @State private var displayedMonth = Calendar.app.startOfMonth(for: .now)
@@ -15,13 +16,18 @@ struct ContentView: View {
 
     private var calendar: Calendar { .app }
 
+    /// Antal uppgifter per dag i den visade månaden (inklusive återkommande tillfällen).
     private var counts: [Date: DayCount] {
         var result: [Date: DayCount] = [:]
-        for item in allItems {
-            let day = calendar.startOfDay(for: item.dueDate)
-            result[day, default: DayCount()].total += 1
-            if !item.isDone {
-                result[day, default: DayCount()].open += 1
+        let days = calendar.weeksInMonth(displayedMonth).flatMap { $0 }.compactMap { $0 }
+        for day in days {
+            var count = DayCount()
+            for item in allItems where item.occurs(on: day) {
+                count.total += 1
+                if !item.isDone(on: day) { count.open += 1 }
+            }
+            if count.total > 0 {
+                result[calendar.startOfDay(for: day)] = count
             }
         }
         return result
@@ -65,6 +71,12 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingNewTodo) {
                 TodoEditorView(item: nil, initialDate: selectedDate)
+            }
+            .onChange(of: scenePhase, initial: true) { _, phase in
+                // Fyll på påminnelser för återkommande uppgifter
+                if phase == .active {
+                    ReminderScheduler.refreshAll(allItems)
+                }
             }
         }
     }

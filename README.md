@@ -9,7 +9,11 @@ En iPhone- och iPad-app skriven i SwiftUI. Lägg till uppgifter på valfri dag i
 - **En prick under dagar som har uppgifter.** Färgad prick betyder att det finns uppgifter kvar, grön prick att alla är klara.
 - **Att göra-lista per dag** som visar till exempel "2 av 5 klara".
 - Uppgifter har titel, anteckningar, valfritt klockslag och prioritet (låg, normal eller hög).
-- **Påminnelser** som notis vid vald tid.
+- **Återkommande uppgifter** som upprepas varje dag, på vardagar, varje vecka, varannan vecka, varje månad eller varje år. Du kan välja ett slutdatum.
+  - Varje tillfälle bockas av för sig.
+  - När du raderar kan du välja att ta bort bara den dagen, den dagen och alla kommande, eller hela serien.
+  - Uppgifter som upprepas den 31:a hamnar på sista dagen i kortare månader.
+- **Påminnelser** som notis vid vald tid. För återkommande uppgifter planeras de närmaste tillfällena och fylls på varje gång appen öppnas.
 - Svep åt höger för att markera en uppgift som klar och åt vänster för att radera den. Tryck på en uppgift för att redigera den.
 - Uppgifterna sparas lokalt på telefonen med SwiftData.
 - Gränssnittet är på svenska och har stöd för mörkt läge och VoiceOver.
