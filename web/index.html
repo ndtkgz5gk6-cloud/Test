@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kalender">
+<title>Kalender med att göra</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: kalendern till vänster och dagens lista till höger på bred skärm, staplade på telefon. */
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --fg: #1b1d23;
+  --muted: #676d79;
+  --line: #e2e4ea;
+  --accent: #d9532c;
+  --accent-soft: #fbe6de;
+  --on-accent: #ffffff;
+  --done: #23874c;
+  --danger: #c93434;
+  --shadow: 0 1px 2px rgba(20, 22, 30, .06), 0 8px 24px rgba(20, 22, 30, .06);
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --surface: #1b1d22; --fg: #eceef1; --muted: #9aa0ab; --line: #2b2e35;
+    --accent: #ff7a52; --accent-soft: #3a2219; --on-accent: #1b0f0a; --done: #4cc07e; --danger: #ff6b6b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111317; --surface: #1b1d22; --fg: #eceef1; --muted: #9aa0ab; --line: #2b2e35;
+  --accent: #ff7a52; --accent-soft: #3a2219; --on-accent: #1b0f0a; --done: #4cc07e; --danger: #ff6b6b;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.45 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 32px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg { width: 1em; height: 1em; flex: none; }
+
+.wrap { max-width: 1080px; margin: 0 auto; }
+
+/* Toppfält */
+.topbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding-block: 18px 14px;
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--on-accent);
+  display: grid; place-items: center; font-size: 18px;
+}
+.brand h1 { font: 700 1.35rem/1 var(--font-display); margin: 0; letter-spacing: -.01em; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
+  padding: 8px 12px; font-weight: 500; min-height: 38px;
+}
+.btn:hover { border-color: var(--muted); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { border-color: var(--accent); filter: brightness(1.05); }
+.btn-ghost { background: transparent; border-color: transparent; }
+.btn-danger { color: var(--danger); }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: 1px solid transparent; background: transparent;
+  display: inline-grid; place-items: center; font-size: 18px; color: var(--muted);
+}
+.icon-btn:hover { background: var(--bg); color: var(--fg); }
+
+.notice {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; font-size: 14px;
+}
+.notice p { margin: 0; flex: 1 1 220px; }
+
+/* Huvudlayout */
+.layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; }
+}
+.panel { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+
+/* Kalender */
+.cal { padding: 14px 14px 18px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.cal-head { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.cal-title { font: 700 1.3rem/1.2 var(--font-display); margin: 0 auto; text-align: center; }
+.grid { display: grid; grid-template-columns: 2rem repeat(7, minmax(0, 1fr)); row-gap: 2px; }
+.wd { text-align: center; font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--muted); padding-bottom: 6px; }
+.wk { display: grid; place-items: center; font-size: 11px; color: var(--muted); opacity: .75; font-variant-numeric: tabular-nums; }
+.day {
+  border: 0; background: transparent; padding: 4px 0 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: 10px; min-height: 52px;
+}
+.day:hover .num { background: var(--bg); }
+.num {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  font-variant-numeric: tabular-nums; font-size: 15px;
+}
+.day.today .num { color: var(--accent); font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--accent); }
+.day.sel .num, .day.sel:hover .num { background: var(--accent); color: var(--on-accent); font-weight: 700; box-shadow: none; }
+.day.weekend .num { color: var(--muted); }
+.day.weekend.sel .num { color: var(--on-accent); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
+.dot.open { background: var(--accent); }
+.dot.alldone { background: var(--done); }
+.cal-legend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Dagens lista */
+.daypanel { padding: 18px 8px 10px; }
+.day-head { display: flex; align-items: baseline; gap: 10px; padding: 0 12px 10px; flex-wrap: wrap; }
+.day-head h2 { font: 700 1.25rem/1.2 var(--font-display); margin: 0; margin-right: auto; text-wrap: balance; }
+.progress { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { height: 4px; border-radius: 4px; background: var(--line); margin: 0 12px 8px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--done); border-radius: 4px; transition: width .25s ease; }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.item {
+  display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px 10px 10px; border-radius: 10px;
+}
+.item:hover { background: var(--bg); }
+.item + .item { border-top: 1px solid var(--line); }
+.item:hover + .item, .item:hover { border-top-color: transparent; }
+.check {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); background: transparent;
+  display: grid; place-items: center; flex: none; margin-top: 1px; color: transparent; font-size: 15px;
+}
+.check:hover { border-color: var(--done); }
+.item.done .check { background: var(--done); border-color: var(--done); color: var(--surface); }
+.body { flex: 1; min-width: 0; border: 0; background: transparent; text-align: left; padding: 2px 0; }
+.title { display: block; font-weight: 500; overflow-wrap: anywhere; }
+.item.done .title { text-decoration: line-through; color: var(--muted); }
+.notes { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+.meta span { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.prio { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 99px; margin-top: 4px; flex: none; }
+.prio.high { color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
+.prio.low { color: var(--muted); background: var(--bg); }
+.item .icon-btn { width: 34px; height: 34px; font-size: 16px; opacity: .6; }
+.item:hover .icon-btn, .item .icon-btn:focus-visible { opacity: 1; }
+.item.done { opacity: .8; }
+
+.empty { text-align: center; padding: 36px 16px 30px; color: var(--muted); }
+.empty-mark { font-size: 34px; color: var(--line); }
+.empty h3 { font: 600 1.05rem/1.3 var(--font-display); color: var(--fg); margin: 8px 0 4px; }
+.empty p { margin: 0 0 14px; }
+
+/* Dialoger */
+dialog {
+  border: 0; border-radius: 18px; padding: 0; width: min(480px, calc(100vw - 24px));
+  background: var(--surface); color: var(--fg); box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+  max-height: calc(100dvh - 24px);
+}
+dialog::backdrop { background: rgba(10, 12, 16, .45); }
+.dlg { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+.dlg-head { display: flex; align-items: center; gap: 8px; padding: 12px 12px 8px 18px; }
+.dlg-head h2 { font: 700 1.15rem/1.2 var(--font-display); margin: 0 auto 0 0; }
+.dlg-body { padding: 4px 18px 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.dlg-foot { display: flex; gap: 8px; padding: 12px 18px 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.dlg-foot .spacer { margin-right: auto; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span, .label { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.input {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+  padding: 10px 12px; min-height: 42px;
+}
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea.input { resize: vertical; min-height: 70px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 42px; }
+.switch { position: relative; width: 46px; height: 28px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.switch i { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background .15s; pointer-events: none; }
+.switch i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
+.switch input:checked + i { background: var(--done); }
+.switch input:checked + i::after { transform: translateX(18px); }
+.switch input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; text-align: center; padding: 7px 4px; border-radius: 7px; font-weight: 500; font-size: 14px; }
+.seg input:checked + span { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); }
+.hint { font-size: 13px; color: var(--muted); margin: -6px 0 0; }
+.choices { display: flex; flex-direction: column; gap: 8px; padding: 4px 18px 18px; }
+.choices .btn { justify-content: center; min-height: 44px; }
+.confirm-text { margin: 0; padding: 0 18px 12px; color: var(--muted); }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px);
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 500; font-size: 14px;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; max-width: calc(100vw - 32px);
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.foot { margin-top: 18px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+
+@media (max-width: 520px) {
+  .btn-label { display: none; }
+  .cal { padding: 12px 6px 16px; }
+  .grid { grid-template-columns: 1.6rem repeat(7, minmax(0, 1fr)); }
+  .num { width: 34px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M8 14l2.5 2.5L16 11"/></svg></div>
+      <h1>Kalender</h1>
+    </div>
+    <button class="btn" id="btn-today" type="button">Idag</button>
+    <button class="btn btn-primary" id="btn-new" type="button" aria-label="Ny uppgift">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="btn-label">Ny uppgift</span>
+    </button>
+  </header>
+
+  <div class="notice" id="example-notice" hidden>
+    <p>Det här är exempeluppgifter som visar hur appen fungerar.</p>
+    <button class="btn" id="btn-clear-examples" type="button">Rensa exempel</button>
+  </div>
+  <div class="notice" id="storage-notice" hidden>
+    <p>Den här webbläsaren tillåter inte att data sparas. Uppgifterna försvinner när du stänger sidan.</p>
+  </div>
+
+  <main class="layout">
+    <section class="panel cal" id="cal" aria-label="Månadskalender">
+      <div class="cal-head">
+        <button class="icon-btn" id="btn-prev" type="button" aria-label="Föregående månad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <h2 class="cal-title" id="cal-title" aria-live="polite"></h2>
+        <button class="icon-btn" id="btn-next" type="button" aria-label="Nästa månad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+      <div class="grid" id="cal-grid" role="grid"></div>
+      <div class="cal-legend">
+        <span><i class="dot open"></i>Uppgifter kvar</span>
+        <span><i class="dot alldone"></i>Allt klart</span>
+      </div>
+    </section>
+
+    <section class="panel daypanel" aria-labelledby="day-title">
+      <div class="day-head">
+        <h2 id="day-title"></h2>
+        <span class="progress" id="day-progress"></span>
+      </div>
+      <div class="bar" id="day-bar" hidden><i id="day-bar-fill"></i></div>
+      <ul class="list" id="day-list"></ul>
+      <div class="empty" id="day-empty" hidden>
+        <div class="empty-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg></div>
+        <h3>Inga uppgifter</h3>
+        <p>Lägg till något att göra den här dagen.</p>
+        <button class="btn btn-primary" id="btn-new-empty" type="button">Ny uppgift</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="foot">
+    <button class="btn btn-ghost" id="btn-backup" type="button">Säkerhetskopia</button>
+  </div>
+</div>
+
+<!-- Redigera / ny uppgift -->
+<dialog id="editor" aria-labelledby="editor-title">
+  <form class="dlg" id="editor-form" novalidate>
+    <div class="dlg-head">
+      <h2 id="editor-title">Ny uppgift</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="dlg-body">
+      <label class="field"><span>Uppgift</span>
+        <input class="input" id="f-title" type="text" placeholder="Vad behöver göras?" autocomplete="off" required>
+      </label>
+      <label class="field"><span>Anteckningar</span>
+        <textarea class="input" id="f-notes" rows="2" placeholder="Valfritt"></textarea>
+      </label>
+      <div class="row">
+        <label class="field"><span id="f-date-label">Datum</span>
+          <input class="input" id="f-date" type="date" required>
+        </label>
+        <div class="field">
+          <div class="toggle"><span class="label">Klockslag</span>
+            <label class="switch"><input type="checkbox" id="f-hastime" aria-label="Klockslag"><i></i></label>
+          </div>
+          <input class="input" id="f-time" type="time" aria-label="Tid" hidden>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">Prioritet</span>
+        <div class="seg" role="radiogroup" aria-label="Prioritet">
+          <label><input type="radio" name="prio" id="f-prio-0" value="0"><span>Låg</span></label>
+          <label><input type="radio" name="prio" id="f-prio-1" value="1"><span>Normal</span></label>
+          <label><input type="radio" name="prio" id="f-prio-2" value="2"><span>Hög</span></label>
+        </div>
+      </div>
+      <div class="row">
+        <label class="field"><span>Upprepa</span>
+          <select class="input" id="f-recurrence"></select>
+        </label>
+        <div class="field" id="f-end-wrap" hidden>
+          <div class="toggle"><span class="label">Slutdatum</span>
+            <label class="switch"><input type="checkbox" id="f-hasend" aria-label="Slutdatum"><i></i></label>
+          </div>
+          <input class="input" id="f-end" type="date" aria-label="Sista dag" hidden>
+        </div>
+      </div>
+      <p class="hint" id="f-series-hint" hidden>Ändringar gäller alla tillfällen i serien.</p>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn btn-ghost btn-danger spacer" type="button" id="btn-delete-in-editor" hidden>Radera</button>
+      <span class="spacer" id="foot-spacer"></span>
+      <button class="btn" type="button" data-close>Avbryt</button>
+      <button class="btn btn-primary" type="submit" id="btn-save">Spara</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Bekräftelse -->
+<dialog id="confirm" aria-labelledby="confirm-title">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="confirm-title"></h2></div>
+    <p class="confirm-text" id="confirm-text"></p>
+    <div class="choices" id="confirm-choices"></div>
+  </div>
+</dialog>
+
+<!-- Säkerhetskopia -->
+<dialog id="backup" aria-labelledby="backup-title">
+  <div class="dlg">
+    <div class="dlg-head">
+      <h2 id="backup-title">Säkerhetskopia</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="dlg-body">
+      <p class="hint" style="margin:0">Uppgifterna sparas bara i den här webbläsaren. Kopiera texten nedan och spara den någonstans för att flytta eller säkra dina uppgifter. Klistra in en kopia och tryck på Återställ för att läsa tillbaka den.</p>
+      <textarea class="input" id="backup-text" rows="8" spellcheck="false" aria-label="Säkerhetskopia som text"></textarea>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn btn-danger spacer" type="button" id="btn-restore">Återställ</button>
+      <button class="btn btn-primary" type="button" id="btn-copy">Kopiera</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- Konstanter ----------
+  const STORAGE_KEY = "kalender.todos.v1";
+  const SEEDED_KEY = "kalender.seeded.v1";
+  const PRIORITY = ["Låg", "Normal", "Hög"];
+  const RECURRENCE = [
+    { title: "Aldrig", short: "" },
+    { title: "Varje dag", short: "Dagligen" },
+    { title: "Vardagar (mån–fre)", short: "Vardagar" },
+    { title: "Varje vecka", short: "Varje vecka" },
+    { title: "Varannan vecka", short: "Varannan vecka" },
+    { title: "Varje månad", short: "Varje månad" },
+    { title: "Varje år", short: "Varje år" },
+  ];
+  const ICON = {
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    repeat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg>',
+  };
+
+  // ---------- Datum (dagar lagras som "ÅÅÅÅ-MM-DD") ----------
+  const DAY_MS = 864e5;
+  const pad = (n) => String(n).padStart(2, "0");
+  const makeKey = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+  const parts = (s) => s.split("-").map(Number);
+  const utc = (s) => { const [y, m, d] = parts(s); return Date.UTC(y, m - 1, d); };
+  const fromUTC = (t) => { const d = new Date(t); return makeKey(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()); };
+  const addDays = (s, n) => fromUTC(utc(s) + n * DAY_MS);
+  const diffDays = (a, b) => Math.round((utc(b) - utc(a)) / DAY_MS);
+  const weekday = (s) => new Date(utc(s)).getUTCDay(); // 0 = söndag
+  const daysInMonth = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const dayOf = (s) => parts(s)[2];
+  const monthOf = (s) => parts(s)[1];
+  const todayKey = () => { const n = new Date(); return makeKey(n.getFullYear(), n.getMonth() + 1, n.getDate()); };
+  function isoWeek(s) {
+    const d = new Date(utc(s));
+    d.setUTCDate(d.getUTCDate() + 3 - ((d.getUTCDay() + 6) % 7)); // torsdagen i samma vecka
+    const jan4 = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+    return 1 + Math.round(((d - jan4) / DAY_MS - 3 + ((jan4.getUTCDay() + 6) % 7)) / 7);
+  }
+  const fmt = (s, opts) => new Intl.DateTimeFormat("sv-SE", { timeZone: "UTC", ...opts }).format(new Date(utc(s)));
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // ---------- Uppgifter ----------
+  function occurs(t, day) {
+    if (day < t.date) return false;
+    if (!t.recurrence) return day === t.date;
+    if (t.recurrenceEnd && day > t.recurrenceEnd) return false;
+    if (t.skipped.includes(day)) return false;
+    const [y, m] = parts(day);
+    const clampedDay = Math.min(dayOf(t.date), daysInMonth(y, m)); // 31:a → sista dagen i månaden
+    switch (t.recurrence) {
+      case 1: return true;
+      case 2: { const w = weekday(day); return w !== 0 && w !== 6; }
+      case 3: return diffDays(t.date, day) % 7 === 0;
+      case 4: return diffDays(t.date, day) % 14 === 0;
+      case 5: return dayOf(day) === clampedDay;
+      case 6: return monthOf(day) === monthOf(t.date) && dayOf(day) === clampedDay;
+      default: return false;
+    }
+  }
+  const isDone = (t, day) => (t.recurrence ? t.completed.includes(day) : t.done);
+  function toggleDone(t, day) {
+    if (!t.recurrence) { t.done = !t.done; return; }
+    if (t.completed.includes(day)) t.completed = t.completed.filter((d) => d !== day);
+    else t.completed.push(day);
+  }
+  /** Returnerar true om hela uppgiften ska raderas. */
+  function removeOccurrences(t, scope, day) {
+    if (!t.recurrence || scope === "all") return true;
+    if (scope === "day") {
+      t.skipped.push(day);
+      t.completed = t.completed.filter((d) => d !== day);
+      return false;
+    }
+    const newEnd = addDays(day, -1); // "denna och kommande"
+    if (newEnd < t.date) return true;
+    t.recurrenceEnd = newEnd;
+    return false;
+  }
+  function normalize(t) {
+    return {
+      id: String(t.id || uid()),
+      title: String(t.title || "").slice(0, 500),
+      notes: String(t.notes || ""),
+      date: /^\d{4}-\d{2}-\d{2}$/.test(t.date) ? t.date : todayKey(),
+      time: /^\d{2}:\d{2}$/.test(t.time || "") ? t.time : null,
+      priority: [0, 1, 2].includes(t.priority) ? t.priority : 1,
+      done: !!t.done,
+      recurrence: Number.isInteger(t.recurrence) && t.recurrence >= 0 && t.recurrence <= 6 ? t.recurrence : 0,
+      recurrenceEnd: /^\d{4}-\d{2}-\d{2}$/.test(t.recurrenceEnd || "") ? t.recurrenceEnd : null,
+      completed: Array.isArray(t.completed) ? t.completed.filter((d) => typeof d === "string") : [],
+      skipped: Array.isArray(t.skipped) ? t.skipped.filter((d) => typeof d === "string") : [],
+      createdAt: Number(t.createdAt) || Date.now(),
+      example: !!t.example,
+    };
+  }
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  // ---------- Lagring ----------
+  let storageOk = true;
+  function readStore(k) { try { return localStorage.getItem(k); } catch { storageOk = false; return null; } }
+  function writeStore(k, v) { try { localStorage.setItem(k, v); } catch { storageOk = false; } }
+
+  let todos = [];
+  function load() {
+    const raw = readStore(STORAGE_KEY);
+    if (raw) {
+      try { todos = JSON.parse(raw).map(normalize); } catch { todos = []; }
+    } else if (!readStore(SEEDED_KEY)) {
+      todos = exampleTodos();
+      writeStore(SEEDED_KEY, "1");
+      save();
+    }
+  }
+  function save() { writeStore(STORAGE_KEY, JSON.stringify(todos)); }
+
+  function exampleTodos() {
+    const t = todayKey();
+    const mk = (o) => normalize({ ...o, id: uid(), example: true, createdAt: Date.now() });
+    return [
+      mk({ title: "Handla mat till helgen", notes: "Mjölk, bröd, kaffe, frukt", date: t, time: "17:30", priority: 2 }),
+      mk({ title: "Träna", date: addDays(t, -7), time: "18:00", recurrence: 3, completed: [addDays(t, -7)] }),
+      mk({ title: "Svara på mejl", date: addDays(t, -3), recurrence: 2, priority: 0 }),
+      mk({ title: "Ring tandläkaren", date: addDays(t, 1), time: "09:00" }),
+      mk({ title: "Betala hyran", date: makeKey(...parts(t).slice(0, 2), 25), recurrence: 5, priority: 2 }),
+      mk({ title: "Vattna blommorna", date: addDays(t, -2), done: true }),
+    ];
+  }
+
+  // ---------- Läge ----------
+  const state = {
+    selected: todayKey(),
+    viewY: parts(todayKey())[0],
+    viewM: parts(todayKey())[1],
+    editingId: null,
+    occurrenceDay: null,
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // ---------- Kalender ----------
+  function renderCalendar() {
+    const { viewY: y, viewM: m } = state;
+    $("cal-title").textContent = cap(fmt(makeKey(y, m, 1), { month: "long", year: "numeric" }));
+
+    const grid = $("cal-grid");
+    let html = '<div class="wd" aria-hidden="true">v.</div>';
+    ["M", "T", "O", "T", "F", "L", "S"].forEach((d) => { html += `<div class="wd" aria-hidden="true">${d}</div>`; });
+
+    const first = makeKey(y, m, 1);
+    const lead = (weekday(first) + 6) % 7; // måndag = 0
+    const total = daysInMonth(y, m);
+    const cells = Array(lead).fill(null);
+    for (let d = 1; d <= total; d++) cells.push(makeKey(y, m, d));
+    while (cells.length % 7) cells.push(null);
+
+    const today = todayKey();
+    for (let i = 0; i < cells.length; i += 7) {
+      const week = cells.slice(i, i + 7);
+      html += `<div class="wk" aria-hidden="true">${isoWeek(week.find(Boolean))}</div>`;
+      week.forEach((day, idx) => {
+        if (!day) { html += "<div></div>"; return; }
+        let open = 0, count = 0;
+        for (const t of todos) if (occurs(t, day)) { count++; if (!isDone(t, day)) open++; }
+        const cls = ["day"];
+        if (day === today) cls.push("today");
+        if (day === state.selected) cls.push("sel");
+        if (idx >= 5) cls.push("weekend");
+        const dot = count ? (open ? "open" : "alldone") : "";
+        const label = cap(fmt(day, { weekday: "long", day: "numeric", month: "long" })) +
+          (count ? `, ${open} av ${count} uppgifter kvar` : "");
+        html += `<button type="button" class="${cls.join(" ")}" data-day="${day}" aria-label="${esc(label)}" aria-pressed="${day === state.selected}">` +
+          `<span class="num">${dayOf(day)}</span><i class="dot ${dot}"></i></button>`;
+      });
+    }
+    grid.innerHTML = html;
+  }
+
+  function changeMonth(delta) {
+    let m = state.viewM + delta, y = state.viewY;
+    if (m < 1) { m = 12; y--; }
+    if (m > 12) { m = 1; y++; }
+    state.viewM = m; state.viewY = y;
+    renderCalendar();
+  }
+
+  // ---------- Dagens lista ----------
+  function occurrencesFor(day) {
+    return todos
+      .filter((t) => occurs(t, day))
+      .sort((a, b) => {
+        const da = isDone(a, day), db = isDone(b, day);
+        if (da !== db) return da ? 1 : -1;
+        if (!!a.time !== !!b.time) return a.time ? -1 : 1;
+        if (a.time && b.time && a.time !== b.time) return a.time < b.time ? -1 : 1;
+        if (a.priority !== b.priority) return b.priority - a.priority;
+        return a.createdAt - b.createdAt;
+      });
+  }
+
+  function renderDay() {
+    const day = state.selected;
+    $("day-title").textContent = cap(fmt(day, { weekday: "long", day: "numeric", month: "long" }));
+    const items = occurrencesFor(day);
+    const done = items.filter((t) => isDone(t, day)).length;
+
+    $("day-progress").textContent = items.length ? `${done} av ${items.length} klara` : "";
+    $("day-bar").hidden = !items.length;
+    $("day-bar-fill").style.width = items.length ? `${(done / items.length) * 100}%` : "0";
+    $("day-empty").hidden = items.length > 0;
+
+    $("day-list").innerHTML = items.map((t) => {
+      const d = isDone(t, day);
+      const meta = [];
+      if (t.time) meta.push(`<span>${ICON.clock}${t.time}</span>`);
+      if (t.recurrence) meta.push(`<span>${ICON.repeat}${RECURRENCE[t.recurrence].short}</span>`);
+      const prio = t.priority === 2 ? '<span class="prio high">Hög</span>' : t.priority === 0 ? '<span class="prio low">Låg</span>' : "";
+      return `<li class="item${d ? " done" : ""}" data-id="${t.id}">
+        <button type="button" class="check" data-action="toggle" aria-label="${d ? "Markera som ej klar" : "Markera som klar"}: ${esc(t.title)}">${ICON.check}</button>
+        <button type="button" class="body" data-action="edit" aria-label="Redigera ${esc(t.title)}">
+          <span class="title">${esc(t.title)}</span>
+          ${t.notes ? `<span class="notes">${esc(t.notes)}</span>` : ""}
+          ${meta.length ? `<span class="meta">${meta.join("")}</span>` : ""}
+        </button>
+        ${prio}
+        <button type="button" class="icon-btn" data-action="delete" aria-label="Radera ${esc(t.title)}">${ICON.trash}</button>
+      </li>`;
+    }).join("");
+  }
+
+  function render() {
+    renderCalendar();
+    renderDay();
+    $("example-notice").hidden = !todos.some((t) => t.example);
+    $("storage-notice").hidden = storageOk;
+  }
+
+  function selectDay(day) {
+    state.selected = day;
+    const [y, m] = parts(day);
+    state.viewY = y; state.viewM = m;
+    render();
+  }
+
+  // ---------- Toast ----------
+  let toastTimer;
+  function toast(msg) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  }
+
+  // ---------- Bekräftelse (sidans egen dialog) ----------
+  function ask(title, text, choices) {
+    $("confirm-title").textContent = title;
+    $("confirm-text").textContent = text || "";
+    $("confirm-text").hidden = !text;
+    const box = $("confirm-choices");
+    box.innerHTML = "";
+    [...choices, { label: "Avbryt" }].forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn" + (c.danger ? " btn-danger" : "");
+      b.textContent = c.label;
+      b.addEventListener("click", () => { $("confirm").close(); c.run && c.run(); });
+      box.appendChild(b);
+    });
+    $("confirm").showModal();
+  }
+
+  function askDelete(t, day, afterDelete) {
+    const doDelete = (scope) => {
+      if (removeOccurrences(t, scope, day)) todos = todos.filter((x) => x !== t);
+      save(); render(); toast("Raderad");
+      afterDelete && afterDelete();
+    };
+    if (!t.recurrence) {
+      ask("Radera uppgiften?", `”${t.title}” tas bort.`, [{ label: "Radera", danger: true, run: () => doDelete("all") }]);
+      return;
+    }
+    const choices = [];
+    if (day && occurs(t, day)) {
+      choices.push({ label: `Radera endast ${fmt(day, { day: "numeric", month: "long" })}`, danger: true, run: () => doDelete("day") });
+      choices.push({ label: "Radera denna och kommande", danger: true, run: () => doDelete("future") });
+    }
+    choices.push({ label: "Radera hela serien", danger: true, run: () => doDelete("all") });
+    ask("Återkommande uppgift", `”${t.title}” upprepas ${RECURRENCE[t.recurrence].short.toLowerCase()}.`, choices);
+  }
+
+  // ---------- Redigering ----------
+  function nextHour() {
+    const d = new Date();
+    return `${pad((d.getHours() + 1) % 24)}:00`;
+  }
+
+  function openEditor(t, day) {
+    state.editingId = t ? t.id : null;
+    state.occurrenceDay = day;
+    $("editor-title").textContent = t ? "Redigera uppgift" : "Ny uppgift";
+    $("f-title").value = t ? t.title : "";
+    $("f-notes").value = t ? t.notes : "";
+    $("f-date").value = t ? t.date : day;
+    $("f-hastime").checked = !!(t && t.time);
+    $("f-time").value = (t && t.time) || nextHour();
+    $(`f-prio-${t ? t.priority : 1}`).checked = true;
+    $("f-recurrence").value = String(t ? t.recurrence : 0);
+    $("f-hasend").checked = !!(t && t.recurrenceEnd);
+    $("f-end").value = (t && t.recurrenceEnd) || addDays(t ? t.date : day, 30);
+    $("btn-delete-in-editor").hidden = !t;
+    $("foot-spacer").hidden = !!t;
+    syncEditor();
+    $("editor").showModal();
+    if (!t) setTimeout(() => $("f-title").focus(), 30);
+  }
+
+  function syncEditor() {
+    const rec = Number($("f-recurrence").value);
+    $("f-time").hidden = !$("f-hastime").checked;
+    $("f-end-wrap").hidden = !rec;
+    $("f-end").hidden = !rec || !$("f-hasend").checked;
+    $("f-end").min = $("f-date").value;
+    $("f-date-label").textContent = rec ? "Startdatum" : "Datum";
+    $("f-series-hint").hidden = !(rec && state.editingId);
+  }
+
+  function saveEditor(e) {
+    e.preventDefault();
+    const title = $("f-title").value.trim();
+    if (!title) { $("f-title").focus(); toast("Skriv vad som ska göras"); return; }
+    const date = $("f-date").value || state.occurrenceDay || todayKey();
+    const rec = Number($("f-recurrence").value);
+    let end = rec && $("f-hasend").checked ? $("f-end").value || null : null;
+    if (end && end < date) end = date;
+    const data = {
+      title,
+      notes: $("f-notes").value.trim(),
+      date,
+      time: $("f-hastime").checked && $("f-time").value ? $("f-time").value : null,
+      priority: Number(document.querySelector('input[name="prio"]:checked').value),
+      recurrence: rec,
+      recurrenceEnd: end,
+    };
+    const existing = todos.find((t) => t.id === state.editingId);
+    if (existing) {
+      Object.assign(existing, data, { example: false });
+    } else {
+      todos.push(normalize({ ...data, id: uid(), createdAt: Date.now() }));
+    }
+    save();
+    $("editor").close();
+    // Visa dagen uppgiften hamnade på om den inte syns idag
+    const t = existing || todos[todos.length - 1];
+    if (!occurs(t, state.selected)) selectDay(date); else render();
+    toast(existing ? "Ändringar sparade" : "Uppgift tillagd");
+  }
+
+  // ---------- Säkerhetskopia ----------
+  let restoreArmed = false;
+  function openBackup() {
+    $("backup-text").value = JSON.stringify(todos.map(({ example, ...rest }) => rest), null, 2);
+    restoreArmed = false;
+    $("btn-restore").textContent = "Återställ";
+    $("backup").showModal();
+  }
+  async function copyBackup() {
+    const ta = $("backup-text");
+    try { await navigator.clipboard.writeText(ta.value); toast("Kopierat"); }
+    catch { ta.focus(); ta.select(); toast("Markerat – kopiera med Cmd/Ctrl + C"); }
+  }
+  function restoreBackup() {
+    let data;
+    try { data = JSON.parse($("backup-text").value); } catch { toast("Texten är inte en giltig säkerhetskopia"); return; }
+    if (!Array.isArray(data)) { toast("Texten är inte en giltig säkerhetskopia"); return; }
+    if (!restoreArmed) {
+      restoreArmed = true;
+      $("btn-restore").textContent = `Ersätt med ${data.length} uppgifter?`;
+      return;
+    }
+    todos = data.map(normalize);
+    save(); render();
+    $("backup").close();
+    toast(`${todos.length} uppgifter återställda`);
+  }
+
+  // ---------- Händelser ----------
+  function bind() {
+    $("btn-prev").addEventListener("click", () => changeMonth(-1));
+    $("btn-next").addEventListener("click", () => changeMonth(1));
+    $("btn-today").addEventListener("click", () => selectDay(todayKey()));
+    $("btn-new").addEventListener("click", () => openEditor(null, state.selected));
+    $("btn-new-empty").addEventListener("click", () => openEditor(null, state.selected));
+    $("btn-backup").addEventListener("click", openBackup);
+    $("btn-copy").addEventListener("click", copyBackup);
+    $("btn-restore").addEventListener("click", restoreBackup);
+    $("btn-clear-examples").addEventListener("click", () => {
+      todos = todos.filter((t) => !t.example);
+      save(); render(); toast("Exemplen är borttagna");
+    });
+
+    $("cal-grid").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-day]");
+      if (b) { state.selected = b.dataset.day; render(); }
+    });
+
+    $("day-list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const t = todos.find((x) => x.id === btn.closest(".item").dataset.id);
+      if (!t) return;
+      const day = state.selected;
+      if (btn.dataset.action === "toggle") {
+        toggleDone(t, day);
+        save(); render();
+      } else if (btn.dataset.action === "edit") {
+        openEditor(t, day);
+      } else if (btn.dataset.action === "delete") {
+        askDelete(t, day);
+      }
+    });
+
+    $("editor-form").addEventListener("submit", saveEditor);
+    ["f-hastime", "f-recurrence", "f-hasend", "f-date"].forEach((id) => $(id).addEventListener("change", syncEditor));
+    $("btn-delete-in-editor").addEventListener("click", () => {
+      const t = todos.find((x) => x.id === state.editingId);
+      if (!t) return;
+      $("editor").close();
+      askDelete(t, state.occurrenceDay);
+    });
+    document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
+    document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
+
+    // Svep för att byta månad
+    let startX = null, startY = null;
+    const cal = $("cal");
+    cal.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
+    cal.addEventListener("touchend", (e) => {
+      if (startX === null) return;
+      const dx = e.changedTouches[0].clientX - startX, dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) changeMonth(dx < 0 ? 1 : -1);
+      startX = null;
+    });
+
+    // Piltangenter byter månad när fokus inte ligger i ett fält
+    document.addEventListener("keydown", (e) => {
+      if (document.querySelector("dialog[open]") || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+      if (e.key === "ArrowLeft") changeMonth(-1);
+      if (e.key === "ArrowRight") changeMonth(1);
+      if (e.key === "n" && !e.metaKey && !e.ctrlKey) { e.preventDefault(); openEditor(null, state.selected); }
+    });
+
+    // Uppdatera "idag" om sidan står öppen över midnatt
+    let lastToday = todayKey();
+    setInterval(() => { if (todayKey() !== lastToday) { lastToday = todayKey(); render(); } }, 60000);
+  }
+
+  // ---------- Start ----------
+  $("f-recurrence").innerHTML = RECURRENCE.map((r, i) => `<option value="${i}">${r.title}</option>`).join("");
+  load();
+  bind();
+  render();
+})();
+</script>
+</body>
+</html>

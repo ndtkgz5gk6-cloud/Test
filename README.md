@@ -1,8 +1,38 @@
-# Kalender – kalender med att göra-listor för iOS
+# Kalender – kalender med att göra-listor
 
-En iPhone- och iPad-app skriven i SwiftUI. Lägg till uppgifter på valfri dag i kalendern och bocka av dem när de är klara.
+Lägg till uppgifter på valfri dag i kalendern och bocka av dem när de är klara. Appen finns i två versioner med samma funktioner:
 
-## Funktioner
+- **Webbversion** i `web/` som körs direkt i webbläsaren.
+- **iOS-app** i `Kalender/` skriven i SwiftUI.
+
+## Webbversionen
+
+Hela appen ligger i en enda fil, `web/index.html`.
+
+- **Kör lokalt:** öppna `web/index.html` i en webbläsare, eller starta en enkel server:
+  ```sh
+  cd web
+  python3 -m http.server 8000
+  ```
+  och gå till http://localhost:8000.
+- **Använd på iPhone:** lägg mappen `web/` på en webbserver, till exempel GitHub Pages. Öppna sidan i Safari och välj *Dela → Lägg till på hemskärmen*. Då får appen en egen ikon och öppnas i helskärm.
+- **Data:** uppgifterna sparas i webbläsaren med `localStorage`. Under *Säkerhetskopia* kan du kopiera ut dem som text och läsa in dem igen.
+- **Kortkommandon:** `←` och `→` byter månad och `N` skapar en ny uppgift.
+- **Skillnad mot iOS-appen:** webbversionen skickar inga påminnelser.
+
+### Göra om webbversionen till en iOS-app
+
+1. **Capacitor:** paketerar `web/index.html` som en riktig iOS-app utan att du skriver om något. Kräver en Mac med Xcode:
+   ```sh
+   npm init -y && npm install @capacitor/core @capacitor/cli @capacitor/ios
+   npx cap init Kalender se.dittnamn.kalender --web-dir web
+   npx cap add ios && npx cap open ios
+   ```
+2. **SwiftUI-appen i `Kalender/`:** en inbyggd app med samma funktioner plus påminnelser. Ändringar du gör i webbversionen behöver då föras över dit.
+
+## iOS-appen
+
+### Funktioner
 
 - **Månadskalender** med veckonummer, där veckan börjar på måndag.
 - Bläddra mellan månader med pilarna eller genom att svepa åt vänster eller höger. **Idag** hoppar tillbaka till dagens datum.
@@ -18,24 +48,24 @@ En iPhone- och iPad-app skriven i SwiftUI. Lägg till uppgifter på valfri dag i
 - Uppgifterna sparas lokalt på telefonen med SwiftData.
 - Gränssnittet är på svenska och har stöd för mörkt läge och VoiceOver.
 
-## Krav
+### Krav
 
 - En Mac med **Xcode 16** eller senare.
 - iOS 17 eller senare.
 
-## Så kör du appen
+### Så kör du appen
 
 1. Klona repot och öppna `Kalender/Kalender.xcodeproj` i Xcode.
 2. Välj en simulator, till exempel iPhone 16, och tryck **⌘R**.
 
-### På din egen iPhone
+#### På din egen iPhone
 
 1. Klicka på projektet **Kalender** i Xcode, välj målet **Kalender** och fliken **Signing & Capabilities**.
 2. Välj ditt Apple-ID under **Team**. Ett gratis Apple-ID fungerar.
 3. Ändra **Bundle Identifier** till något unikt, till exempel `se.dittnamn.Kalender`.
 4. Anslut iPhonen, välj den som mål och tryck **⌘R**. Första gången kan du behöva godkänna utvecklaren på telefonen under *Inställningar → Allmänt → VPN och enhetshantering*.
 
-## Filer
+### Filer
 
 | Fil | Innehåll |
 |---|---|
